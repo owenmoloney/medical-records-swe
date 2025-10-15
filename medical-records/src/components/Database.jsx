@@ -5,6 +5,7 @@ export default function Database() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // get data from backend cgi 
   useEffect(() => {
     fetch("/~mballard7/medical-records-swe/medical-records/cgi-bin/connectDB.cgi", { method: "GET" })
       .then((res) => res.json())
@@ -25,7 +26,7 @@ export default function Database() {
 
   return (
     <div className="p-4">
-      <h2>Doctors Data</h2>
+      <h2>Patients Data</h2>
       <table border="1" cellPadding="5">
         <thead>
           <tr>
