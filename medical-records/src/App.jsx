@@ -1,18 +1,21 @@
-import { Container, Row, Col } from 'react-bootstrap';
 
-import './App.css'
+// src/App.jsx
+// App.jsx
+import React from "react";
+import { Routes, Route } from "react-router-dom";
+import Login from "./pages/Login";
+import PatientPage from "./pages/PatientPage";
+import DoctorPage from "./pages/DoctorPage";
 
 function App() {
-
   return (
-    <Container fluid className="d-flex vh-100">
-      <Row className="m-auto text-center">
-        <Col>
-          <h1> Owen Moloney Medical Records </h1>
-        </Col>
-      </Row>
-    </Container>
-  )
+    <Routes>
+      <Route path="/" element={<Login />} />
+      <Route path="/patient" element={<PatientPage />} />
+      <Route path="/doctor" element={<DoctorPage />} />
+    </Routes>
+  );
 }
 
-export default App
+export default App;
+
