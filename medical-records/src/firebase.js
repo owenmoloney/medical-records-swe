@@ -2,6 +2,7 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
+import { getStorage } from "firebase/storage";
 
 
 // Your Firebase configuration
@@ -9,7 +10,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyDm20Plug9S3EWQo4umsdnrMXaEn8i_Jeo",
   authDomain: "medical-project-6a2aa.firebaseapp.com",
   projectId: "medical-project-6a2aa",
-  storageBucket: "medical-project-6a2aa.appspot.com",
+  storageBucket: "medical-project-6a2aa.firebasestorage.app",
   messagingSenderId: "533053954463",
   appId: "1:533053954463:web:bbb60e3bd068baa90405aa",
   measurementId: "G-GMQZJYE7WW"
@@ -20,6 +21,7 @@ const app = initializeApp(firebaseConfig);
 
 // Initialize Firestore and export it
 const db = getFirestore(app);
-export { db };
+const storage = getStorage(app);
+export { db, storage };
 export const auth = getAuth(app);
 

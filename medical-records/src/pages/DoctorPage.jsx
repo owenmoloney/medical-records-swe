@@ -1,6 +1,9 @@
 // src/pages/DoctorPage.jsx
 import React from "react";
 import RegistrationForm from "../components/RegistrationForm";
+import DoctorSignup  from "../components/DoctorSignup";
+import UploadDocument from "../components/UploadDocument";
+import ViewPatientFiles from "../components/ViewPatientFiles";
 
 export default function DoctorPage() {
   return (
@@ -42,41 +45,36 @@ export default function DoctorPage() {
           backgroundColor: "white",
           padding: "2rem",
           borderRadius: "8px",
+          boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+          marginBottom: "2rem"
+        }}
+      >
+        <DoctorSignup />
+      </section>
+
+      <section
+        style={{
+          backgroundColor: "white",
+          padding: "2rem",
+          borderRadius: "8px",
+          boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+          marginBottom: "2rem"
+        }}
+      >
+        <UploadDocument />
+      </section>
+
+      <section
+        style={{
+          backgroundColor: "white",
+          padding: "2rem",
+          borderRadius: "8px",
           boxShadow: "0 4px 8px rgba(0,0,0,0.1)"
         }}
       >
-        <h2>Upload Medical Records (UI Only)</h2>
-        <p>You can upload PDFs or images of scans and other records here.</p>
-
-        <div style={{ marginTop: "1rem" }}>
-          <label>
-            Upload PDF:
-            <input type="file" accept=".pdf" style={{ display: "block", marginTop: "0.5rem" }} />
-          </label>
-        </div>
-
-        <div style={{ marginTop: "1rem" }}>
-          <label>
-            Upload Image:
-            <input type="file" accept="image/*" style={{ display: "block", marginTop: "0.5rem" }} />
-          </label>
-        </div>
-
-        <button
-          style={{
-            marginTop: "1.5rem",
-            padding: "0.5rem 1rem",
-            backgroundColor: "#0077cc",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "not-allowed"
-          }}
-          disabled
-        >
-          Upload (Not Functional Yet)
-        </button>
+        <ViewPatientFiles />
       </section>
+
     </div>
   );
 }
