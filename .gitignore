@@ -8,6 +8,9 @@
 
 #react files
 /node_modules
+/medical-records/node_modules
 /build
-/dist
+medical-records/dist
 private/*.json
+/medical-records/src/main.jsx
+/medical-records/vite.config.js
