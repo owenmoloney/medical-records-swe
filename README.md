@@ -1,10 +1,16 @@
-# medical-records-swe
-CISC 3598 Software Engineering class project
+# React + Vite
 
-This client-server software aims to create a portal for hospitals and doctors to
-use for the management of patient medical records. The following functionalities
-are included in the project:
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-- User login to manage viewing, reading, and writing permissions
-- PDF and image upload capabilities to manage physical scans and records
-- Encryption to protect sensitive information from hacking attempts
+Currently, two official plugins are available:
+
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+
+## React Compiler
+
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+
+## Expanding the ESLint configuration
+
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
