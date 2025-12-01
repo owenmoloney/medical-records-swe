@@ -1,4 +1,3 @@
-// src/components/RegistrationForm.jsx
 import React, { useState } from "react";
 import { db, auth } from "../firebase";
 import { collection, addDoc, Timestamp, doc, setDoc } from "firebase/firestore";
@@ -22,7 +21,7 @@ export default function RegistrationForm() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
@@ -30,33 +29,31 @@ export default function RegistrationForm() {
     setStatus("Saving...");
 
     try {
-      // 1️⃣ Create Firebase Auth user
-      const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        formData.email,
+        formData.password
+      );
       const user = userCredential.user;
 
-      // 2️⃣ Generate patient_id
       const patient_id = Date.now();
 
-      // 3️⃣ Add patient to Patients collection
       await addDoc(collection(db, "Patients"), {
         ...formData,
         patient_id,
-        user_id: user.uid,
-        phone_number: Number(formData.phone_number),
-        emergency_contact_phone: String(formData.emergency_contact_phone),
-        date_of_birth: formData.date_of_birth ? Timestamp.fromDate(new Date(formData.date_of_birth)) : null,
-        created_at: Timestamp.now()
+        created_at: Timestamp.fromDate(new Date()),
+        uid: user.uid
       });
 
-      // 4️⃣ Add user to Users collection for login
       await setDoc(doc(db, "Users", user.uid), {
-        uid: user.uid,
         email: formData.email,
         role: "patient",
-        created_at: Timestamp.now()
+        patient_id: patient_id,
+        created_at: Timestamp.fromDate(new Date())
       });
 
-      setStatus("✅ Patient registered successfully!");
+      setStatus("Patient registered successfully.");
+
       setFormData({
         first_name: "",
         last_name: "",
@@ -71,53 +68,232 @@ export default function RegistrationForm() {
       });
     } catch (error) {
       console.error("Error adding patient:", error);
-      setStatus("❌ Error adding patient. Check console.");
+      setStatus("Error adding patient. Check console.");
     }
   };
 
   return (
-    <div style={{ maxWidth: 500, margin: "2rem auto", fontFamily: "sans-serif" }}>
-      <h2>Patient Registration</h2>
-      <form onSubmit={handleSubmit}>
-        <label>First Name:</label>
-        <input name="first_name" value={formData.first_name} onChange={handleChange} required />
+    <div
+      style={{
+        maxWidth: 520,
+        margin: "2.5rem auto",
+        padding: "2rem 2.5rem",
+        borderRadius: "20px",
+        border: "1px solid #e5e7eb",
+        boxShadow: "0 18px 40px rgba(15, 23, 42, 0.12)",
+        fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+        backgroundColor: "#ffffff"
+      }}
+    >
+      <h2
+        style={{
+          textAlign: "center",
+          marginBottom: "1rem",
+          letterSpacing: "0.16em",
+          textTransform: "uppercase",
+          fontSize: "0.9rem",
+          color: "#6b7280"
+        }}
+      >
+        Patient Registration
+      </h2>
 
-        <label>Last Name:</label>
-        <input name="last_name" value={formData.last_name} onChange={handleChange} required />
+      <p
+        style={{
+          textAlign: "center",
+          marginBottom: "1.8rem",
+          fontSize: "0.9rem",
+          color: "#4b5563"
+        }}
+      >
+        Please complete all required fields before submitting.
+      </p>
 
-        <label>Email:</label>
-        <input type="email" name="email" value={formData.email} onChange={handleChange} required />
+      <form onSubmit={handleSubmit} style={{ display: "grid", gap: "0.9rem" }}>
+        <div style={{ display: "grid", gap: "0.35rem" }}>
+          <label style={labelStyle}>First Name</label>
+          <input
+            style={inputStyle}
+            name="first_name"
+            value={formData.first_name}
+            onChange={handleChange}
+            required
+          />
+        </div>
 
-        <label>Password:</label>
-        <input type="password" name="password" value={formData.password} onChange={handleChange} required />
+        <div style={{ display: "grid", gap: "0.35rem" }}>
+          <label style={labelStyle}>Last Name</label>
+          <input
+            style={inputStyle}
+            name="last_name"
+            value={formData.last_name}
+            onChange={handleChange}
+            required
+          />
+        </div>
 
-        <label>Address:</label>
-        <input name="address" value={formData.address} onChange={handleChange} required />
+        <div style={{ display: "grid", gap: "0.35rem" }}>
+          <label style={labelStyle}>Email</label>
+          <input
+            style={inputStyle}
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            required
+          />
+        </div>
 
-        <label>Date of Birth:</label>
-        <input type="date" name="date_of_birth" value={formData.date_of_birth} onChange={handleChange} required />
+        <div style={{ display: "grid", gap: "0.35rem" }}>
+          <label style={labelStyle}>Password</label>
+          <input
+            style={inputStyle}
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            required
+          />
+        </div>
 
-        <label>Gender:</label>
-        <select name="gender" value={formData.gender} onChange={handleChange} required>
-          <option value="">Select</option>
-          <option value="male">Male</option>
-          <option value="female">Female</option>
-          <option value="other">Other</option>
-        </select>
+        <div style={{ display: "grid", gap: "0.35rem" }}>
+          <label style={labelStyle}>Address</label>
+          <input
+            style={inputStyle}
+            name="address"
+            value={formData.address}
+            onChange={handleChange}
+            required
+          />
+        </div>
 
-        <label>Phone Number:</label>
-        <input name="phone_number" value={formData.phone_number} onChange={handleChange} required />
+        <div style={{ display: "grid", gap: "0.35rem" }}>
+          <label style={labelStyle}>Date Of Birth</label>
+          <input
+            style={inputStyle}
+            type="date"
+            name="date_of_birth"
+            value={formData.date_of_birth}
+            onChange={handleChange}
+            required
+          />
+        </div>
 
-        <label>Emergency Contact Name:</label>
-        <input name="emergency_contact_name" value={formData.emergency_contact_name} onChange={handleChange} required />
+        <div style={{ display: "grid", gap: "0.35rem" }}>
+          <label style={labelStyle}>Gender</label>
+          <select
+            style={inputStyle}
+            name="gender"
+            value={formData.gender}
+            onChange={handleChange}
+            required
+          >
+            <option value="">Select gender</option>
+            <option value="female">Female</option>
+            <option value="male">Male</option>
+            <option value="nonbinary">Non-binary</option>
+            <option value="prefer_not_to_say">Prefer not to say</option>
+          </select>
+        </div>
 
-        <label>Emergency Contact Phone:</label>
-        <input name="emergency_contact_phone" value={formData.emergency_contact_phone} onChange={handleChange} required />
+        <div style={{ display: "grid", gap: "0.35rem" }}>
+          <label style={labelStyle}>Phone Number</label>
+          <input
+            style={inputStyle}
+            name="phone_number"
+            value={formData.phone_number}
+            onChange={handleChange}
+            required
+          />
+        </div>
 
-        <button type="submit" style={{ marginTop: "1rem" }}>Register</button>
+        <div style={{ display: "grid", gap: "0.35rem" }}>
+          <label style={labelStyle}>Emergency Contact Name</label>
+          <input
+            style={inputStyle}
+            name="emergency_contact_name"
+            value={formData.emergency_contact_name}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        <div style={{ display: "grid", gap: "0.35rem" }}>
+          <label style={labelStyle}>Emergency Contact Phone</label>
+          <input
+            style={inputStyle}
+            name="emergency_contact_phone"
+            value={formData.emergency_contact_phone}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            gap: "0.75rem",
+            marginTop: "0.75rem"
+          }}
+        >
+          <button
+            type="reset"
+            style={{
+              ...buttonBase,
+              backgroundColor: "#f3f4f6",
+              color: "#374151"
+            }}
+          >
+            Clear
+          </button>
+          <button
+            type="submit"
+            style={{
+              ...buttonBase,
+              background:
+                "linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #818cf8 100%)",
+              color: "#ffffff",
+              boxShadow: "0 12px 30px rgba(79, 70, 229, 0.35)"
+            }}
+          >
+            Submit
+          </button>
+        </div>
       </form>
-      {status && <p style={{ marginTop: "1rem" }}>{status}</p>}
+
+      {status && (
+        <p style={{ marginTop: "1rem", fontSize: "0.9rem", color: "#4b5563" }}>
+          {status}
+        </p>
+      )}
     </div>
   );
 }
 
+const labelStyle = {
+  fontSize: "0.78rem",
+  fontWeight: 600,
+  letterSpacing: "0.14em",
+  textTransform: "uppercase",
+  color: "#374151"
+};
+
+const inputStyle = {
+  width: "100%",
+  borderRadius: "999px",
+  border: "1px solid #d1d5db",
+  padding: "0.7rem 1rem",
+  fontSize: "0.9rem",
+  outline: "none",
+  backgroundColor: "#f9fafb"
+};
+
+const buttonBase = {
+  border: "none",
+  borderRadius: "999px",
+  padding: "0.7rem 1.6rem",
+  fontSize: "0.9rem",
+  fontWeight: 500,
+  cursor: "pointer"
+};

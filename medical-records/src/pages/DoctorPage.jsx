@@ -1,7 +1,6 @@
-// src/pages/DoctorPage.jsx
 import React from "react";
 import RegistrationForm from "../components/RegistrationForm";
-import DoctorSignup  from "../components/DoctorSignup";
+import DoctorSignup from "../components/DoctorSignup";
 import UploadDocument from "../components/UploadDocument";
 import ViewPatientFiles from "../components/ViewPatientFiles";
 
@@ -10,72 +9,104 @@ export default function DoctorPage() {
     <div
       style={{
         minHeight: "100vh",
-        backgroundColor: "#e0f0ff", // light blue background
-        padding: "2rem",
-        fontFamily: "sans-serif"
+        backgroundColor: "#F8FBFF",
+        padding: "2.5rem 2rem",
+        fontFamily:
+          "SF Pro Display, -apple-system, BlinkMacSystemFont, Inter, Poppins, system-ui, sans-serif"
       }}
     >
-      <header
+      <h1
         style={{
-          backgroundColor: "#0077cc",
-          color: "white",
-          padding: "1rem 2rem",
-          borderRadius: "8px",
-          marginBottom: "2rem"
+          textAlign: "center",
+          fontSize: "2rem",
+          fontWeight: 700,
+          marginBottom: "2.2rem",
+          letterSpacing: "0.12em",
+          textTransform: "uppercase",
+          color: "#1f2937"
         }}
       >
-        <h1>Doctor Dashboard</h1>
-        <p>Register new patients and manage records below:</p>
-      </header>
-
-      <main
-        style={{
-          backgroundColor: "white",
-          padding: "2rem",
-          borderRadius: "8px",
-          boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-          marginBottom: "2rem"
-        }}
-      >
-        <RegistrationForm />
-      </main>
+        Doctor Dashboard
+      </h1>
 
       <section
         style={{
-          backgroundColor: "white",
-          padding: "2rem",
-          borderRadius: "8px",
-          boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+          background: "#fff0f6",
+          padding: "1px",
+          borderRadius: "26px",
+          boxShadow: "0 10px 30px rgba(255, 182, 203, 0.18)",
           marginBottom: "2rem"
         }}
       >
-        <DoctorSignup />
+        <div
+          style={{
+            backgroundColor: "white",
+            padding: "2rem 2.2rem",
+            borderRadius: "26px"
+          }}
+        >
+          <RegistrationForm />
+        </div>
       </section>
 
       <section
         style={{
-          backgroundColor: "white",
-          padding: "2rem",
-          borderRadius: "8px",
-          boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+          background: "#f3ecff",
+          padding: "1px",
+          borderRadius: "26px",
+          boxShadow: "0 10px 30px rgba(216, 180, 254, 0.18)",
           marginBottom: "2rem"
         }}
       >
-        <UploadDocument />
+        <div
+          style={{
+            backgroundColor: "white",
+            padding: "2rem 2.2rem",
+            borderRadius: "26px"
+          }}
+        >
+          <DoctorSignup />
+        </div>
       </section>
 
       <section
         style={{
-          backgroundColor: "white",
-          padding: "2rem",
-          borderRadius: "8px",
-          boxShadow: "0 4px 8px rgba(0,0,0,0.1)"
+          background: "#e9f2ff",
+          padding: "1px",
+          borderRadius: "26px",
+          boxShadow: "0 10px 30px rgba(147, 197, 253, 0.18)",
+          marginBottom: "2rem"
         }}
       >
-        <ViewPatientFiles />
+        <div
+          style={{
+            backgroundColor: "white",
+            padding: "2rem 2.2rem",
+            borderRadius: "26px"
+          }}
+        >
+          <UploadDocument />
+        </div>
       </section>
 
+      <section
+        style={{
+          background: "#ecfff4",
+          padding: "1px",
+          borderRadius: "26px",
+          boxShadow: "0 10px 30px rgba(167, 243, 208, 0.18)"
+        }}
+      >
+        <div
+          style={{
+            backgroundColor: "white",
+            padding: "2rem 2.2rem",
+            borderRadius: "26px"
+          }}
+        >
+          <ViewPatientFiles />
+        </div>
+      </section>
     </div>
   );
 }
-

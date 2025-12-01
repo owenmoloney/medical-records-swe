@@ -1,95 +1,130 @@
-import React, { useState, useEffect } from "react";
-import { db, auth } from "../firebase";
-import { collection, getDocs } from "firebase/firestore";
-import SearchPatient from "./SearchPatient";
+import React, { useState } from "react";
 
-export default function ViewPatientFiles() {
-  const [doctorId, setDoctorId] = useState(null); // set via auth
-  const [selectedPatient, setSelectedPatient] = useState(null);
-  const [files, setFiles] = useState([]);
-  const [selectedFile, setSelectedFile] = useState(null);
+function ViewPatientFiles() {
+  const [lastName, setLastName] = useState("");
 
-  // Get current doctor ID
-  useEffect(() => {
-    if (auth.currentUser) {
-      setDoctorId(auth.currentUser.uid);
-    }
-  }, []);
-
-  // Fetch files for selected patient
-  useEffect(() => {
-    const fetchFiles = async () => {
-      if (!selectedPatient) return;
-
-      try {
-        const filesRef = collection(db, `Patients/${selectedPatient.id}/files`);
-        const snapshot = await getDocs(filesRef);
-
-        const fetchedFiles = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setFiles(fetchedFiles);
-        setSelectedFile(null); // reset selected file
-      } catch (error) {
-        console.error("Error fetching files:", error);
-        alert("Failed to fetch files.");
-      }
-    };
-
-    fetchFiles();
-  }, [selectedPatient]);
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log("Search files for:", lastName);
+  };
 
   return (
-    <div style={{ maxWidth: 600, margin: "2rem auto", fontFamily: "sans-serif" }}>
-      <h2 className="text-lg font-semibold mb-3">View Patient Files</h2>
+    <div
+      style={{
+        maxWidth: 520,
+        margin: "0 auto",
+        fontFamily:
+          "SF Pro Display, -apple-system, BlinkMacSystemFont, Inter, system-ui, sans-serif",
+        textAlign: "left"
+      }}
+    >
+      <h2
+        style={{
+          textAlign: "center",
+          fontSize: "1.1rem",
+          letterSpacing: "0.18em",
+          textTransform: "uppercase",
+          color: "#4b5563",
+          marginBottom: "0.5rem"
+        }}
+      >
+        View Patient Files
+      </h2>
 
-      {/* Patient Search */}
-      <SearchPatient doctorId={doctorId} onSelectPatient={setSelectedPatient} />
+      <p
+        style={{
+          textAlign: "center",
+          fontSize: "0.9rem",
+          color: "#6b7280",
+          marginBottom: "1.6rem"
+        }}
+      >
+        Search by last name to review uploaded documents.
+      </p>
 
-      {/* Files Dropdown */}
-      {files.length > 0 && (
-        <div style={{ marginBottom: "1rem" }}>
-          <label className="block mb-1 font-medium">Select File:</label>
-          <select
-            className="border p-1 rounded w-full"
-            onChange={(e) =>
-              setSelectedFile(files.find((f) => f.id === e.target.value))
-            }
-            defaultValue=""
+      <form
+        onSubmit={handleSubmit}
+        style={{
+          display: "grid",
+          gap: "0.9rem"
+        }}
+      >
+        <div style={{ display: "grid", gap: "0.35rem" }}>
+          <label style={labelStyle}>Search by Last Name</label>
+          <input
+            style={inputStyle}
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            placeholder="Enter last name"
+            required
+          />
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: "1rem",
+            marginTop: "1.1rem"
+          }}
+        >
+          <button
+            type="button"
+            style={buttonSecondary}
+            onClick={() => setLastName("")}
           >
-            <option value="">-- Choose File --</option>
-            {files.map((f) => (
-              <option key={f.id} value={f.id}>
-                {f.name} — Uploaded:{" "}
-                {f.uploadedAt?.toDate
-                  ? f.uploadedAt.toDate().toLocaleString()
-                  : "N/A"}
-              </option>
-            ))}
-          </select>
+            Back
+          </button>
+          <button type="submit" style={buttonSearch}>
+            Search
+          </button>
         </div>
-      )}
-
-      {/* Render selected file */}
-      {selectedFile && (
-        <div style={{ marginTop: "1rem" }}>
-          {selectedFile.name.endsWith(".pdf") ? (
-            <iframe
-              src={selectedFile.url}
-              width="100%"
-              height="600px"
-              title={selectedFile.name}
-            />
-          ) : (
-            <img
-              src={selectedFile.url}
-              alt={selectedFile.name}
-              style={{ width: "100%", maxHeight: "600px", objectFit: "contain" }}
-            />
-          )}
-        </div>
-      )}
+      </form>
     </div>
   );
 }
+
+const labelStyle = {
+  fontSize: "0.78rem",
+  fontWeight: 600,
+  letterSpacing: "0.14em",
+  textTransform: "uppercase",
+  color: "#374151"
+};
+
+const inputStyle = {
+  width: "100%",
+  borderRadius: "999px",
+  border: "1px solid #d1d5db",
+  padding: "0.7rem 1rem",
+  fontSize: "0.9rem",
+  outline: "none",
+  backgroundColor: "#f9fafb"
+};
+
+const buttonSecondary = {
+  borderRadius: "999px",
+  padding: "0.75rem 1.6rem",
+  fontSize: "0.9rem",
+  fontWeight: 500,
+  cursor: "pointer",
+  background: "#ffffff",
+  border: "1.5px solid #D1D5DB",
+  boxShadow: "0 4px 12px rgba(0,0,0,0.04)",
+  transition: "0.25s ease"
+};
+
+const buttonSearch = {
+  border: "none",
+  borderRadius: "999px",
+  padding: "0.75rem 1.9rem",
+  fontSize: "0.95rem",
+  fontWeight: 600,
+  cursor: "pointer",
+  background: "linear-gradient(135deg, #10B981 0%, #6EE7B7 100%)",
+  color: "#ffffff",
+  boxShadow: "0 8px 22px rgba(16,185,129,0.22)",
+  transition: "0.3s ease"
+};
+
+export default ViewPatientFiles;

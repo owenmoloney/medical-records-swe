@@ -1,89 +1,122 @@
-import React, { useState, useEffect } from "react";
-import { auth, db, storage } from "../firebase";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import SearchPatient from "./SearchPatient";
+import React, { useState } from "react";
 
-export default function UploadDocument() {
+function UploadDocument() {
+  const [lastName, setLastName] = useState("");
   const [file, setFile] = useState(null);
-  const [progress, setProgress] = useState(0);
-  const [uploading, setUploading] = useState(false);
-  const [selectedPatient, setSelectedPatient] = useState(null);
-  const [doctorId, setDoctorId] = useState(null);
 
-  useEffect(() => {
-    if (auth.currentUser) {
-      setDoctorId(auth.currentUser.uid);
-    }
-  }, []);
-
-  const handleFileChange = (e) => setFile(e.target.files[0]);
-
-  const handleUpload = async () => {
-    if (!file) return alert("Please select a file first.");
-    if (!selectedPatient) return alert("Please select a patient first.");
-    if (!doctorId) return alert("You must be logged in as a doctor.");
-
-    const patientId = selectedPatient.id;
-    const filePath = `patients/${patientId}/${file.name}`;
-    const storageRef = ref(storage, filePath);
-    const uploadTask = uploadBytesResumable(storageRef, file);
-
-    setUploading(true);
-
-    uploadTask.on(
-      "state_changed",
-      (snapshot) => {
-        const pct = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        setProgress(Math.round(pct));
-      },
-      (error) => {
-        console.error("Upload error:", error);
-        alert("Upload failed.");
-        setUploading(false);
-      },
-      async () => {
-        try {
-          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-
-          await addDoc(collection(db, `Patients/${patientId}/files`), {
-            name: file.name,
-            url: downloadURL,
-            uploadedBy: doctorId,
-            uploadedAt: serverTimestamp(),
-          });
-
-          alert("Upload complete!");
-          setFile(null);
-          setProgress(0);
-        } catch (error) {
-          console.error("Error saving file metadata:", error);
-          alert("Failed to save file information.");
-        } finally {
-          setUploading(false);
-        }
-      }
-    );
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log("Upload for:", lastName, file);
   };
 
   return (
-    <div style={{ maxWidth: 600, margin: "2rem auto", fontFamily: "sans-serif" }}>
-      <h2 className="text-lg font-semibold mb-3">Upload File for Patient</h2>
-
-      <SearchPatient doctorId={doctorId} onSelectPatient={setSelectedPatient} />
-
-      <div>
-        <input type="file" accept="image/*,.pdf" onChange={handleFileChange} />
-        {uploading && <p>Progress: {progress}%</p>}
-      </div>
-
-      <button
-        className="mt-2 bg-blue-500 text-white px-4 py-1 rounded"
-        onClick={handleUpload}
-        disabled={uploading || !doctorId || !selectedPatient || !file}
+    <div
+      style={{
+        maxWidth: 520,
+        margin: "0 auto",
+        fontFamily:
+          "SF Pro Display, -apple-system, BlinkMacSystemFont, Inter, system-ui, sans-serif",
+        textAlign: "left"
+      }}
+    >
+      <h2
+        style={{
+          textAlign: "center",
+          fontSize: "1.1rem",
+          letterSpacing: "0.18em",
+          textTransform: "uppercase",
+          color: "#4b5563",
+          marginBottom: "0.5rem"
+        }}
       >
-        {uploading ? "Uploading..." : "Upload"}
-      </button>
+        Upload File For Patient
+      </h2>
+
+      <p
+        style={{
+          textAlign: "center",
+          fontSize: "0.9rem",
+          color: "#6b7280",
+          marginBottom: "1.6rem"
+        }}
+      >
+        Search for the patient and attach a document to their record.
+      </p>
+
+      <form
+        onSubmit={handleSubmit}
+        style={{
+          display: "grid",
+          gap: "0.9rem"
+        }}
+      >
+        <div style={{ display: "grid", gap: "0.35rem" }}>
+          <label style={labelStyle}>Search by Last Name</label>
+          <input
+            style={inputStyle}
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            placeholder="Enter last name"
+            required
+          />
+        </div>
+
+        <div style={{ display: "grid", gap: "0.35rem" }}>
+          <label style={labelStyle}>File</label>
+          <input
+            type="file"
+            onChange={(e) => setFile(e.target.files[0] || null)}
+            style={{
+              fontSize: "0.85rem"
+            }}
+          />
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginTop: "1.1rem"
+          }}
+        >
+          <button type="submit" style={buttonUpload}>
+            Upload
+          </button>
+        </div>
+      </form>
     </div>
   );
 }
+
+const labelStyle = {
+  fontSize: "0.78rem",
+  fontWeight: 600,
+  letterSpacing: "0.14em",
+  textTransform: "uppercase",
+  color: "#374151"
+};
+
+const inputStyle = {
+  width: "100%",
+  borderRadius: "999px",
+  border: "1px solid #d1d5db",
+  padding: "0.7rem 1rem",
+  fontSize: "0.9rem",
+  outline: "none",
+  backgroundColor: "#f9fafb"
+};
+
+const buttonUpload = {
+  border: "none",
+  borderRadius: "999px",
+  padding: "0.75rem 1.9rem",
+  fontSize: "0.95rem",
+  fontWeight: 600,
+  cursor: "pointer",
+  background: "linear-gradient(135deg, #3B82F6 0%, #93C5FD 100%)",
+  color: "#ffffff",
+  boxShadow: "0 8px 22px rgba(59,130,246,0.22)",
+  transition: "0.3s ease"
+};
+
+export default UploadDocument;
