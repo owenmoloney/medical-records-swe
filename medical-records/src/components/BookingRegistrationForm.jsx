@@ -4,7 +4,7 @@ import { db, auth } from "../firebase";
 import { collection, addDoc, Timestamp, doc, setDoc } from "firebase/firestore";
 import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
 
-export default function BookingRegistrationForm({ selectedDoctor, onRegistrationComplete }) {
+export default function BookingRegistrationForm({ selectedDoctor, onRegistrationComplete, onUidReady }) {
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
@@ -57,6 +57,10 @@ export default function BookingRegistrationForm({ selectedDoctor, onRegistration
         created_at: Timestamp.fromDate(new Date())
       });
 
+      // ✅ Pass UID back to parent only if the callback exists
+      if (onUidReady) {
+        onUidReady(user.uid);
+      } 
       setStatus("Patient registered successfully! Verification email sent.");
 
       // Reset form

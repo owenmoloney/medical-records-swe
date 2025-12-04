@@ -15,7 +15,9 @@ export default function FindDoctor() {
   const [selectedTime, setSelectedTime] = useState("");
   const [email, setEmail] = useState("");
   const [showRegistration, setShowRegistration] = useState(false);
-  const [registrationComplete, setRegistrationComplete] = useState(false); // NEW
+  const [registrationComplete, setRegistrationComplete] = useState(false); 
+  const [patientUid, setPatientUid] = useState(""); 
+
 
   const locations = ["New York City", "Boston", "New Jersey City", "Long Island"];
 
@@ -86,6 +88,7 @@ export default function FindDoctor() {
         doctorId: selectedDoctor.id,
         appointmentDate,
         email,
+        uid: patientUid, // store patient UID
         status: "pending",
         createdAt: serverTimestamp()
       });
@@ -141,6 +144,7 @@ export default function FindDoctor() {
         <BookingRegistrationForm 
           selectedDoctor={selectedDoctor} 
           onRegistrationComplete={() => setRegistrationComplete(true)} // callback
+          onUidReady={(uid) => setPatientUid(uid)} // Pass UID up
         />
       )}
 
