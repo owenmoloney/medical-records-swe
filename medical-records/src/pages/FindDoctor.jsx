@@ -3,6 +3,8 @@ import React, { useState, useEffect } from "react";
 import "./FindDoctor.css";
 import { collection, getDocs, query, where, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase";
+import BookingRegistrationForm from "../components/BookingRegistrationForm";
+
 
 export default function FindDoctor() {
   const [location, setLocation] = useState("");       
@@ -12,10 +14,11 @@ export default function FindDoctor() {
   const [availableTimes, setAvailableTimes] = useState([]);
   const [selectedTime, setSelectedTime] = useState("");
   const [email, setEmail] = useState("");
+  const [showRegistration, setShowRegistration] = useState(false);
+  const [registrationComplete, setRegistrationComplete] = useState(false); // NEW
 
   const locations = ["New York City", "Boston", "New Jersey City", "Long Island"];
 
-  // Fetch doctors based on location
   useEffect(() => {
     if (!location) return;
 
@@ -41,7 +44,6 @@ export default function FindDoctor() {
     fetchDoctors();
   }, [location]);
 
-  // Fetch booked times for selected doctor/date
   useEffect(() => {
     if (!selectedDoctor || !selectedDate) return;
 
@@ -61,17 +63,15 @@ export default function FindDoctor() {
       const snapshot = await getDocs(q);
       const bookedTimes = snapshot.docs.map(doc => new Date(doc.data().appointmentDate).getHours());
 
-      // Doctor available 9AM-5PM
       const allTimes = Array.from({ length: 9 }, (_, i) => i + 9);
       const available = allTimes.filter(hour => !bookedTimes.includes(hour));
       setAvailableTimes(available);
-      setSelectedTime(""); // reset time selection
+      setSelectedTime("");
     };
 
     fetchBookedTimes();
   }, [selectedDoctor, selectedDate]);
 
-  // Handle booking
   const handleBook = async () => {
     if (!selectedDoctor || !selectedDate || selectedTime === "" || !email) {
       alert("Please select doctor, date, time, and enter your email.");
@@ -91,13 +91,15 @@ export default function FindDoctor() {
       });
 
       alert(`Appointment requested with Dr. ${selectedDoctor.first_name} ${selectedDoctor.last_name} at ${selectedTime}:00. Please check your email to confirm.`);
-      
-      // Reset selections
+
+      // Reset
       setSelectedDoctor(null);
       setSelectedDate("");
       setSelectedTime("");
       setEmail("");
       setAvailableTimes([]);
+      setRegistrationComplete(false);
+      setShowRegistration(false);
     } catch (error) {
       console.error("Error booking appointment:", error);
       alert("Failed to book appointment.");
@@ -125,13 +127,25 @@ export default function FindDoctor() {
             <p><strong>Location:</strong> {doc.location}</p>
             <p><strong>Specialty:</strong> {doc.specialty || "General"}</p>
             <p><strong>Phone:</strong> {doc.phone_number}</p>
-            <button onClick={() => setSelectedDoctor(doc)}>Book Now</button>
+            <button onClick={() => {
+              setSelectedDoctor(doc);
+              setShowRegistration(true);
+              setRegistrationComplete(false); // reset
+            }}>Book Now</button>
           </div>
         ))}
       </div>
 
-      {/* Booking section */}
-      {selectedDoctor && (
+      {/* Show registration form first */}
+      {selectedDoctor && showRegistration && !registrationComplete && (
+        <BookingRegistrationForm 
+          selectedDoctor={selectedDoctor} 
+          onRegistrationComplete={() => setRegistrationComplete(true)} // callback
+        />
+      )}
+
+      {/* Show booking section only after registration */}
+      {selectedDoctor && registrationComplete && (
         <div className="booking-section">
           <h2>Book an Appointment with Dr. {selectedDoctor.first_name} {selectedDoctor.last_name}</h2>
 
