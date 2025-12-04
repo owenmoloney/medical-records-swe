@@ -76,14 +76,11 @@ export default function RegistrationForm() {
     <div
       style={{
         maxWidth: 520,
-        margin: "2.5rem auto",
-        padding: "2rem 2.5rem",
-        borderRadius: "20px",
-        border: "1px solid #e5e7eb",
-        boxShadow: "0 18px 40px rgba(15, 23, 42, 0.12)",
-        fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
-        backgroundColor: "#ffffff"
-      }}
+        margin: "0 auto",
+        fontFamily:
+        "SF Pro Display, -apple-system, BlinkMacSystemFont, Inter, system-ui, sans-serif",
+        textAlign: "left"
+    }}
     >
       <h2
         style={{
