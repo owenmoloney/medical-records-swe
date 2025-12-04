@@ -1,10 +1,18 @@
-import React, { useState } from "react";
+import React, {useState} from "react";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../firebase";
 
-export default function SearchPatient({ onSelectPatient, doctorId }) {
+export default function SearchPatient({ onSelectPatient, doctorId, setFiles, setSelectedFile }) {
   const [lastName, setLastName] = useState("");
   const [patients, setPatients] = useState([]);
+
+  const handleBack = () => {
+    setLastName("");
+    setPatients([]);
+    onSelectPatient(null);
+    if (setFiles) setFiles([]);
+    if (setSelectedFile) setSelectedFile(null);
+  };
 
   const handleSearch = async () => {
     if (!lastName.trim()) return alert("Enter a last name.");
@@ -33,41 +41,35 @@ export default function SearchPatient({ onSelectPatient, doctorId }) {
   };
 
   return (
-
     <div style={{ marginBottom: "1rem" }}>
+      <div style={{ display: "grid", gap: "0.35rem" }}>
+        <label style={labelStyle}>Search by Last Name</label>
+        <input
+          type="text"
+          id="lastName"
+          style={inputStyle}
+          value={lastName}
+          onChange={(e) => setLastName(e.target.value)}
+          placeholder="Enter last name"
+          required
+        />
+      </div>
 
-        <div style={{ display: "grid", gap: "0.35rem" }}>
-          <label style={labelStyle}>Search by Last Name</label>
-          <input
-            type="text"
-            id="lastName"
-            style={inputStyle}
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
-            placeholder="Enter last name"
-            required
-          />
-        </div>
-
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: "1rem",
-            marginTop: "1.1rem"
-          }}
-        >
-          <button
-            type="button"
-            style={buttonSecondary}
-            onClick={() => setLastName("")}
-          >
-            Back
-          </button>
-          <button onClick={handleSearch} style={buttonSearch}>
-            Search
-          </button>
-        </div>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          gap: "1rem",
+          marginTop: "1.1rem",
+        }}
+      >
+        <button type="button" style={buttonSecondary} onClick={handleBack}>
+          Back
+        </button>
+        <button onClick={handleSearch} style={buttonSearch}>
+          Search
+        </button>
+      </div>
 
       {patients.length > 0 && (
         <div style={{ display: "grid", gap: "0.35rem" }}>
@@ -83,9 +85,7 @@ export default function SearchPatient({ onSelectPatient, doctorId }) {
             {patients.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.first_name} {p.last_name} — DOB:{" "}
-                {p.date_of_birth?.toDate
-                  ? p.date_of_birth.toDate().toLocaleDateString()
-                  : "N/A"}
+                {p.date_of_birth ? p.date_of_birth : "N/A"}
               </option>
             ))}
           </select>
@@ -94,6 +94,7 @@ export default function SearchPatient({ onSelectPatient, doctorId }) {
     </div>
   );
 }
+
 
 const labelStyle = {
   fontSize: "0.78rem",

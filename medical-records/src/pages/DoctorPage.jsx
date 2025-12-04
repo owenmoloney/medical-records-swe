@@ -1,8 +1,8 @@
 import React from "react";
 import RegistrationForm from "../components/RegistrationForm";
-import DoctorSignup from "../components/DoctorSignup";
 import UploadDocument from "../components/UploadDocument";
 import ViewPatientFiles from "../components/ViewPatientFiles";
+import Logout from "../components/Logout";
 
 export default function DoctorPage() {
   return (
@@ -51,26 +51,6 @@ export default function DoctorPage() {
 
       <section
         style={{
-          background: "#f3ecff",
-          padding: "1px",
-          borderRadius: "26px",
-          boxShadow: "0 10px 30px rgba(216, 180, 254, 0.18)",
-          marginBottom: "2rem"
-        }}
-      >
-        <div
-          style={{
-            backgroundColor: "white",
-            padding: "2rem 2.2rem",
-            borderRadius: "26px"
-          }}
-        >
-          <DoctorSignup />
-        </div>
-      </section>
-
-      <section
-        style={{
           background: "#e9f2ff",
           padding: "1px",
           borderRadius: "26px",
@@ -94,7 +74,8 @@ export default function DoctorPage() {
           background: "#ecfff4",
           padding: "1px",
           borderRadius: "26px",
-          boxShadow: "0 10px 30px rgba(167, 243, 208, 0.18)"
+          boxShadow: "0 10px 30px rgba(167, 243, 208, 0.18)",
+          marginBottom: "2rem"
         }}
       >
         <div
@@ -107,6 +88,9 @@ export default function DoctorPage() {
           <ViewPatientFiles />
         </div>
       </section>
+
+      <Logout />
+
     </div>
   );
 }

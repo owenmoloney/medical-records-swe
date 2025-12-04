@@ -1,35 +1,49 @@
 import React, { useState, useEffect } from "react";
 import { db, auth } from "../firebase";
-import { collection, getDocs } from "firebase/firestore";
-import SearchPatient from "./SearchPatient";
+import { collection, query, where, getDocs } from "firebase/firestore";
 
-export default function ViewPatientFiles() {
-  const [doctorId, setDoctorId] = useState(null); 
-  const [selectedPatient, setSelectedPatient] = useState(null);
+export default function ViewRecords() {
+  const [patientId, setPatientId] = useState(null); // current patient document ID
   const [files, setFiles] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
-  const [filterType, setFilterType] = useState(""); // NEW filter state
+  const [filterType, setFilterType] = useState("");
 
-
-  // Reset selected file when filtertype changes
+// Reset selected file when filtertype changes
   useEffect(() => {
     setSelectedFile(null);
   }, [filterType]);
 
-  // Get current doctor ID
+  // Get logged-in patient ID from Firestore
   useEffect(() => {
-    if (auth.currentUser) {
-      setDoctorId(auth.currentUser.uid);
-    }
-  }, []);
-
-  // Fetch files for selected patient
-  useEffect(() => {
-    const fetchFiles = async () => {
-      if (!selectedPatient) return;
+    const fetchPatientId = async () => {
+      if (!auth.currentUser) return;
 
       try {
-        const filesRef = collection(db, `Patients/${selectedPatient.id}/files`);
+        const q = query(
+          collection(db, "Patients"),
+          where("uid", "==", auth.currentUser.uid)
+        );
+        const snapshot = await getDocs(q);
+        if (!snapshot.empty) {
+          setPatientId(snapshot.docs[0].id);
+        } else {
+          console.warn("No patient record found for this user.");
+        }
+      } catch (error) {
+        console.error("Error fetching patient ID:", error);
+      }
+    };
+
+    fetchPatientId();
+  }, []);
+
+  // Fetch files for current patient
+  useEffect(() => {
+    const fetchFiles = async () => {
+      if (!patientId) return;
+
+      try {
+        const filesRef = collection(db, `Patients/${patientId}/files`);
         const snapshot = await getDocs(filesRef);
 
         const fetchedFiles = snapshot.docs.map((doc) => ({
@@ -39,7 +53,7 @@ export default function ViewPatientFiles() {
 
         setFiles(fetchedFiles);
         setSelectedFile(null);
-        setFilterType(""); // reset filter when patient changes
+        setFilterType(""); // reset filter
       } catch (error) {
         console.error("Error fetching files:", error);
         alert("Failed to fetch files.");
@@ -47,9 +61,9 @@ export default function ViewPatientFiles() {
     };
 
     fetchFiles();
-  }, [selectedPatient]);
+  }, [patientId]);
 
-  // Filter files based on dropdown
+  // Apply filter by file type
   const filteredFiles = filterType
     ? files.filter((f) => f.uploadType === filterType)
     : files;
@@ -61,36 +75,34 @@ export default function ViewPatientFiles() {
         margin: "0 auto",
         fontFamily:
           "SF Pro Display, -apple-system, BlinkMacSystemFont, Inter, system-ui, sans-serif",
-        textAlign: "left"
+        textAlign: "left",
       }}
     >
       <h2
         style={{
           textAlign: "center",
-          fontSize: "1.1rem",
-          letterSpacing: "0.18em",
+          marginBottom: "1rem",
+          letterSpacing: "0.16em",
           textTransform: "uppercase",
-          color: "#4b5563",
-          marginBottom: "0.5rem"
+          fontSize: "0.9rem",
+          color: "#6b7280",
         }}
       >
-        View Patient Files
+        View Records
       </h2>
 
       <p
         style={{
           textAlign: "center",
+          marginBottom: "1.8rem",
           fontSize: "0.9rem",
-          color: "#6b7280",
-          marginBottom: "1.6rem"
+          color: "#4b5563",
         }}
       >
-        Search by last name to review uploaded documents.
+        Review your uploaded medical records below.
       </p>
 
-      <SearchPatient doctorId={doctorId} onSelectPatient={setSelectedPatient} setFiles={setFiles} setSelectedFile={setSelectedFile}/>
-
-      {/* --- Filter by File Type --- */}
+      {/* Filter by file type */}
       {files.length > 0 && (
         <div style={{ marginBottom: "1rem" }}>
           <label style={labelStyle}>Filter by Type:</label>
@@ -109,14 +121,16 @@ export default function ViewPatientFiles() {
         </div>
       )}
 
-      {/* --- Select File Dropdown --- */}
+      {/* File selection */}
       {filteredFiles.length > 0 && (
         <div style={{ marginBottom: "1rem" }}>
           <label style={labelStyle}>Select File:</label>
           <select
             style={inputStyle}
             onChange={(e) =>
-              setSelectedFile(filteredFiles.find((f) => f.id === e.target.value))
+              setSelectedFile(
+                filteredFiles.find((f) => f.id === e.target.value)
+              )
             }
             defaultValue=""
           >
@@ -161,7 +175,7 @@ const labelStyle = {
   fontWeight: 600,
   letterSpacing: "0.14em",
   textTransform: "uppercase",
-  color: "#374151"
+  color: "#374151",
 };
 
 const inputStyle = {
@@ -171,5 +185,5 @@ const inputStyle = {
   padding: "0.7rem 1rem",
   fontSize: "0.9rem",
   outline: "none",
-  backgroundColor: "#f9fafb"
+  backgroundColor: "#f9fafb",
 };
