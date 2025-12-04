@@ -38,102 +38,51 @@ export default function Login() {
       setError("Login failed. Check email and password.");
     }
   };
-return (
-  <div
-    style={{
-      minHeight: "100vh",
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      backgroundColor: "#e0f0ff",
-      fontFamily: "sans-serif"
-    }}
-  >
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%", maxWidth: "400px" }}>
-      
-      {/* Login Box */}
-      <div
-        style={{
-          backgroundColor: "white",
-          padding: "2rem 3rem",
-          borderRadius: "8px",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-          width: "100%",
-          marginBottom: "1rem" // spacing between login and button
-        }}
-      >
-        <h1 style={{ textAlign: "center", color: "#0077cc", marginBottom: "1rem" }}>Medical Login</h1>
+ return (
+    <div className="app-shell">
+      <div className="card card--compact">
+        <h1 className="card-title">Medical Login</h1>
+
         <form onSubmit={handleLogin}>
-          <label>Email:</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            style={{
-              display: "block",
-              width: "100%",
-              padding: "0.5rem",
-              marginBottom: "1rem",
-              borderRadius: "4px",
-              border: "1px solid #ccc"
-            }}
-          />
+          <div className="form-group">
+            <label className="form-label">Email</label>
+            <input
+              type="email"
+              className="form-input"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
 
-          <label>Password:</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            style={{
-              display: "block",
-              width: "100%",
-              padding: "0.5rem",
-              marginBottom: "1rem",
-              borderRadius: "4px",
-              border: "1px solid #ccc"
-            }}
-          />
+          <div className="form-group">
+            <label className="form-label">Password</label>
+            <input
+              type="password"
+              className="form-input"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
 
-          <button
-            type="submit"
-            style={{
-              width: "100%",
-              padding: "0.5rem",
-              backgroundColor: "#0077cc",
-              color: "white",
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer",
-              fontSize: "1rem"
-            }}
-          >
+          <button type="submit" className="btn-primary btn-block">
             Sign In
           </button>
 
-          {error && <p style={{ color: "red", marginTop: "1rem", textAlign: "center" }}>{error}</p>}
+          {error && <p className="form-error">{error}</p>}
         </form>
-      </div>
 
-      {/* Doctor Sign Up Button */}
-      <button
-        type="button"
-        onClick={() => navigate("/doctor-signup")}
-        style={{
-          width: "100%",  // same width as login box
-          padding: "0.5rem",
-          backgroundColor: "#28a745",
-          color: "white",
-          border: "none",
-          borderRadius: "4px",
-          cursor: "pointer",
-          fontSize: "1rem"
-        }}
-      >
-        Doctor Sign Up?
-      </button>
+        <div style={{ marginTop: "1.25rem" }}>
+          <button
+            type="button"
+            onClick={() => navigate("/doctor-signup")}
+            className="btn-secondary btn-block"
+          >
+            Doctor Sign Up?
+          </button>
+        </div>
+      </div>
     </div>
-  </div>
-);
+  );
 }
