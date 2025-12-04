@@ -14,12 +14,11 @@ export default function LandingPage() {
           <a href="#services">Services</a>
           <a href="#contact">Contacts</a>
         </nav>
-        <button
-          className="landing-login-btn"
-          onClick={() => (window.location.href = "/login")}
-        >
-          Login
-        </button>
+        <Link to="/login">
+          <button className="landing-login-btn">
+            Login
+          </button>
+        </Link>
       </header>
 
       <main className="landing-main">
@@ -31,12 +30,9 @@ export default function LandingPage() {
           <p className="landing-subtitle">
             Your secure portal to manage medical records and connect with professionals.
           </p>
-          <button
-            className="btn-primary landing-cta"
-            onClick={() => (window.location.href = "/login")}
-          >
-            Get Started
-          </button>
+          <Link to="/FindDoctor">
+            <button className="btn-primary landing-cta"> Get Started </button>
+          </Link>
         </div>
 
         <div className="landing-image">
