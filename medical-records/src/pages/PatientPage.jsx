@@ -1,6 +1,7 @@
 // src/pages/PatientPage.jsx
 import React from "react";
 import GetPatientInfo from "../components/GetPatientInfo";
+import Logout from "../components/Logout";
 
 export default function PatientPage() {
 
@@ -49,6 +50,8 @@ export default function PatientPage() {
           
         </div>
       </section>
+
+      <Logout />
 
     </div>
   );
