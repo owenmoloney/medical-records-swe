@@ -7,6 +7,8 @@ import PatientPage from "./pages/PatientPage";
 import DoctorPage from "./pages/DoctorPage";
 import LandingPage from "./pages/LandingPage";
 import FindDoctor from "./pages/FindDoctor";
+import DoctorSignupPage from "./pages/DoctorSignupPage";
+
 
 function App() {
   return (
@@ -16,6 +18,7 @@ function App() {
       <Route path="/FindDoctor" element={<FindDoctor/>} />
       <Route path="/patient" element={<PatientPage />} />
       <Route path="/doctor" element={<DoctorPage />} />
+      <Route path="/doctor-signup" element={<DoctorSignupPage />} />
     </Routes>
   );
 }
