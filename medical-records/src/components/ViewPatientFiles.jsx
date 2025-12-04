@@ -1,12 +1,44 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { db, auth } from "../firebase";
+import { collection, getDocs } from "firebase/firestore";
+import SearchPatient from "./SearchPatient";
 
-function ViewPatientFiles() {
-  const [lastName, setLastName] = useState("");
+export default function ViewPatientFiles() {
+  const [doctorId, setDoctorId] = useState(null); // set via auth
+  const [selectedPatient, setSelectedPatient] = useState(null);
+  const [files, setFiles] = useState([]);
+  const [selectedFile, setSelectedFile] = useState(null);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Search files for:", lastName);
-  };
+  // Get current doctor ID
+  useEffect(() => {
+    if (auth.currentUser) {
+      setDoctorId(auth.currentUser.uid);
+    }
+  }, []);
+
+  // Fetch files for selected patient
+  useEffect(() => {
+    const fetchFiles = async () => {
+      if (!selectedPatient) return;
+
+      try {
+        const filesRef = collection(db, `Patients/${selectedPatient.id}/files`);
+        const snapshot = await getDocs(filesRef);
+
+        const fetchedFiles = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setFiles(fetchedFiles);
+        setSelectedFile(null); // reset selected file
+      } catch (error) {
+        console.error("Error fetching files:", error);
+        alert("Failed to fetch files.");
+      }
+    };
+
+    fetchFiles();
+  }, [selectedPatient]);
 
   return (
     <div
@@ -42,44 +74,50 @@ function ViewPatientFiles() {
         Search by last name to review uploaded documents.
       </p>
 
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          display: "grid",
-          gap: "0.9rem"
-        }}
-      >
-        <div style={{ display: "grid", gap: "0.35rem" }}>
-          <label style={labelStyle}>Search by Last Name</label>
-          <input
-            style={inputStyle}
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
-            placeholder="Enter last name"
-            required
-          />
-        </div>
+      <SearchPatient doctorId={doctorId} onSelectPatient={setSelectedPatient} />
 
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: "1rem",
-            marginTop: "1.1rem"
-          }}
-        >
-          <button
-            type="button"
-            style={buttonSecondary}
-            onClick={() => setLastName("")}
+      {files.length > 0 && (
+        <div style={{ marginBottom: "1rem" }}>
+          <label style={labelStyle}>Select File:</label>
+          <select
+            style={inputStyle}
+            onChange={(e) =>
+              setSelectedFile(files.find((f) => f.id === e.target.value))
+            }
+            defaultValue=""
           >
-            Back
-          </button>
-          <button type="submit" style={buttonSearch}>
-            Search
-          </button>
+            <option value="">-- Choose File --</option>
+            {files.map((f) => (
+              <option key={f.id} value={f.id}>
+                {f.name} — Uploaded:{" "}
+                {f.uploadedAt?.toDate
+                  ? f.uploadedAt.toDate().toLocaleString()
+                  : "N/A"}
+              </option>
+            ))}
+          </select>
         </div>
-      </form>
+      )}
+
+      {/* Render selected file */}
+      {selectedFile && (
+        <div style={{ marginTop: "1rem" }}>
+          {selectedFile.name.endsWith(".pdf") ? (
+            <iframe
+              src={selectedFile.url}
+              width="100%"
+              height="600px"
+              title={selectedFile.name}
+            />
+          ) : (
+            <img
+              src={selectedFile.url}
+              alt={selectedFile.name}
+              style={{ width: "100%", maxHeight: "600px", objectFit: "contain" }}
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -127,4 +165,3 @@ const buttonSearch = {
   transition: "0.3s ease"
 };
 
-export default ViewPatientFiles;

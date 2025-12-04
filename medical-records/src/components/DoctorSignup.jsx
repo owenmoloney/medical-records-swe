@@ -1,23 +1,65 @@
 import React, { useState } from "react";
+import { db, auth } from "../firebase";
+import { collection, addDoc, Timestamp, doc, setDoc } from "firebase/firestore";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 
 function DoctorSignup() {
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
     email: "",
-    password: "",
     phone_number: "",
-    number: ""
+    specialty: ""
   });
+
+  const [status, setStatus] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Doctor registration:", formData);
+    setStatus("Saving...");
+
+    try {
+      // 1️⃣ Create Firebase Auth user
+      const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+      const user = userCredential.user;
+
+      // 2️⃣ Generate patient_id
+      const doctor_id = Date.now();
+
+      // 3️⃣ Add patient to Patients collection
+      await addDoc(collection(db, "Doctors"), {
+        ...formData,
+        doctor_id,
+        user_id: user.uid,
+        phone_number: Number(formData.phone_number),
+        created_at: Timestamp.now()
+      });
+
+      // 4️⃣ Add user to Users collection for login
+      await setDoc(doc(db, "Users", user.uid), {
+        uid: user.uid,
+        email: formData.email,
+        role: "doctor",
+        created_at: Timestamp.now()
+      });
+
+      setStatus("✅ Doctor registered successfully!");
+      setFormData({
+        first_name: "",
+        last_name: "",
+        email: "",
+        password: "",
+        phone_number: "",
+      });
+    } catch (error) {
+      console.error("Error adding doctor:", error);
+      setStatus("❌ Error adding doctor. Check console.");
+    }
   };
 
   return (

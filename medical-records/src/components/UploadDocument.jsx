@@ -1,12 +1,69 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { auth, db, storage } from "../firebase";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import SearchPatient from "./SearchPatient";
 
 function UploadDocument() {
-  const [lastName, setLastName] = useState("");
   const [file, setFile] = useState(null);
+  const [progress, setProgress] = useState(0);
+  const [uploading, setUploading] = useState(false);
+  const [selectedPatient, setSelectedPatient] = useState(null);
+  const [doctorId, setDoctorId] = useState(null);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Upload for:", lastName, file);
+  useEffect(() => {
+    if (auth.currentUser) {
+      setDoctorId(auth.currentUser.uid);
+    }
+  }, []);
+
+  const handleFileChange = (e) => setFile(e.target.files[0]);
+
+  const handleUpload = async () => {
+    if (!file) return alert("Please select a file first.");
+    if (!selectedPatient) return alert("Please select a patient first.");
+    if (!doctorId) return alert("You must be logged in as a doctor.");
+
+    const patientId = selectedPatient.id;
+    const filePath = `patients/${patientId}/${file.name}`;
+    const storageRef = ref(storage, filePath);
+    const uploadTask = uploadBytesResumable(storageRef, file);
+
+    setUploading(true);
+
+    uploadTask.on(
+      "state_changed",
+      (snapshot) => {
+        const pct = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        setProgress(Math.round(pct));
+      },
+      (error) => {
+        console.error("Upload error:", error);
+        alert("Upload failed.");
+        setUploading(false);
+      },
+      async () => {
+        try {
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+
+          await addDoc(collection(db, `Patients/${patientId}/files`), {
+            name: file.name,
+            url: downloadURL,
+            uploadedBy: doctorId,
+            uploadedAt: serverTimestamp(),
+          });
+
+          alert("Upload complete!");
+          setFile(null);
+          setProgress(0);
+        } catch (error) {
+          console.error("Error saving file metadata:", error);
+          alert("Failed to save file information.");
+        } finally {
+          setUploading(false);
+        }
+      }
+    );
   };
 
   return (
@@ -32,43 +89,15 @@ function UploadDocument() {
         Upload File For Patient
       </h2>
 
-      <p
-        style={{
-          textAlign: "center",
-          fontSize: "0.9rem",
-          color: "#6b7280",
-          marginBottom: "1.6rem"
-        }}
-      >
-        Search for the patient and attach a document to their record.
-      </p>
-
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          display: "grid",
-          gap: "0.9rem"
-        }}
-      >
-        <div style={{ display: "grid", gap: "0.35rem" }}>
-          <label style={labelStyle}>Search by Last Name</label>
-          <input
-            style={inputStyle}
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
-            placeholder="Enter last name"
-            required
-          />
-        </div>
+      <SearchPatient doctorId={doctorId} onSelectPatient={setSelectedPatient} />
 
         <div style={{ display: "grid", gap: "0.35rem" }}>
           <label style={labelStyle}>File</label>
           <input
             type="file"
-            onChange={(e) => setFile(e.target.files[0] || null)}
-            style={{
-              fontSize: "0.85rem"
-            }}
+            accept="image/*,.pdf"
+            onChange={handleFileChange}
+            style={inputStyle}
           />
         </div>
 
@@ -79,11 +108,10 @@ function UploadDocument() {
             marginTop: "1.1rem"
           }}
         >
-          <button type="submit" style={buttonUpload}>
-            Upload
+          <button onClick={handleUpload} style={buttonUpload}>
+            {uploading ? "Uploading..." : "Upload"}
           </button>
         </div>
-      </form>
     </div>
   );
 }
