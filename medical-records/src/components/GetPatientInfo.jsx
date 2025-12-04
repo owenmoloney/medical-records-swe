@@ -39,7 +39,7 @@ export default function GetPatientInfo() {
       try {
         const q = query(
           collection(db, "Patients"),
-          where("user_id", "==", currentUser.uid)
+          where("uid", "==", currentUser.uid)
         );
         const querySnapshot = await getDocs(q);
 
