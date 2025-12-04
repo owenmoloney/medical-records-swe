@@ -4,10 +4,17 @@ import { collection, getDocs } from "firebase/firestore";
 import SearchPatient from "./SearchPatient";
 
 export default function ViewPatientFiles() {
-  const [doctorId, setDoctorId] = useState(null); // set via auth
+  const [doctorId, setDoctorId] = useState(null); 
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [files, setFiles] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [filterType, setFilterType] = useState(""); // NEW filter state
+
+
+  // Reset selected file when filtertype changes
+  useEffect(() => {
+    setSelectedFile(null);
+  }, [filterType]);
 
   // Get current doctor ID
   useEffect(() => {
@@ -29,8 +36,10 @@ export default function ViewPatientFiles() {
           id: doc.id,
           ...doc.data(),
         }));
+
         setFiles(fetchedFiles);
-        setSelectedFile(null); // reset selected file
+        setSelectedFile(null);
+        setFilterType(""); // reset filter when patient changes
       } catch (error) {
         console.error("Error fetching files:", error);
         alert("Failed to fetch files.");
@@ -39,6 +48,11 @@ export default function ViewPatientFiles() {
 
     fetchFiles();
   }, [selectedPatient]);
+
+  // Filter files based on dropdown
+  const filteredFiles = filterType
+    ? files.filter((f) => f.uploadType === filterType)
+    : files;
 
   return (
     <div
@@ -74,20 +88,40 @@ export default function ViewPatientFiles() {
         Search by last name to review uploaded documents.
       </p>
 
-      <SearchPatient doctorId={doctorId} onSelectPatient={setSelectedPatient} />
+      <SearchPatient doctorId={doctorId} onSelectPatient={setSelectedPatient} setFiles={setFiles} setSelectedFile={setSelectedFile}/>
 
+      {/* --- Filter by File Type --- */}
       {files.length > 0 && (
+        <div style={{ marginBottom: "1rem" }}>
+          <label style={labelStyle}>Filter by Type:</label>
+          <select
+            style={inputStyle}
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value)}
+          >
+            <option value="">All Types</option>
+            <option value="Forms">Forms</option>
+            <option value="Test Results">Test Results</option>
+            <option value="Scans">Scans</option>
+            <option value="Notes">Notes</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      )}
+
+      {/* --- Select File Dropdown --- */}
+      {filteredFiles.length > 0 && (
         <div style={{ marginBottom: "1rem" }}>
           <label style={labelStyle}>Select File:</label>
           <select
             style={inputStyle}
             onChange={(e) =>
-              setSelectedFile(files.find((f) => f.id === e.target.value))
+              setSelectedFile(filteredFiles.find((f) => f.id === e.target.value))
             }
             defaultValue=""
           >
             <option value="">-- Choose File --</option>
-            {files.map((f) => (
+            {filteredFiles.map((f) => (
               <option key={f.id} value={f.id}>
                 {f.name} — Uploaded:{" "}
                 {f.uploadedAt?.toDate
@@ -139,29 +173,3 @@ const inputStyle = {
   outline: "none",
   backgroundColor: "#f9fafb"
 };
-
-const buttonSecondary = {
-  borderRadius: "999px",
-  padding: "0.75rem 1.6rem",
-  fontSize: "0.9rem",
-  fontWeight: 500,
-  cursor: "pointer",
-  background: "#ffffff",
-  border: "1.5px solid #D1D5DB",
-  boxShadow: "0 4px 12px rgba(0,0,0,0.04)",
-  transition: "0.25s ease"
-};
-
-const buttonSearch = {
-  border: "none",
-  borderRadius: "999px",
-  padding: "0.75rem 1.9rem",
-  fontSize: "0.95rem",
-  fontWeight: 600,
-  cursor: "pointer",
-  background: "linear-gradient(135deg, #10B981 0%, #6EE7B7 100%)",
-  color: "#ffffff",
-  boxShadow: "0 8px 22px rgba(16,185,129,0.22)",
-  transition: "0.3s ease"
-};
-

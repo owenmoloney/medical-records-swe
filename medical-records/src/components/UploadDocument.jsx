@@ -10,6 +10,7 @@ function UploadDocument() {
   const [uploading, setUploading] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [doctorId, setDoctorId] = useState(null);
+  const [uploadType, setUploadType] = useState("");
 
   useEffect(() => {
     if (auth.currentUser) {
@@ -23,6 +24,7 @@ function UploadDocument() {
     if (!file) return alert("Please select a file first.");
     if (!selectedPatient) return alert("Please select a patient first.");
     if (!doctorId) return alert("You must be logged in as a doctor.");
+    if (!uploadType) return alert("Please select an upload type.");
 
     const patientId = selectedPatient.id;
     const filePath = `patients/${patientId}/${file.name}`;
@@ -49,12 +51,14 @@ function UploadDocument() {
           await addDoc(collection(db, `Patients/${patientId}/files`), {
             name: file.name,
             url: downloadURL,
+            uploadType: uploadType,
             uploadedBy: doctorId,
             uploadedAt: serverTimestamp(),
           });
 
           alert("Upload complete!");
           setFile(null);
+          setUploadType("");
           setProgress(0);
         } catch (error) {
           console.error("Error saving file metadata:", error);
@@ -90,6 +94,22 @@ function UploadDocument() {
       </h2>
 
       <SearchPatient doctorId={doctorId} onSelectPatient={setSelectedPatient} />
+
+        <div style={{ display: "grid", gap: "0.35rem", marginTop: "1rem" }}>
+          <label style={labelStyle}>Upload Type</label>
+          <select
+            value={uploadType}
+            onChange={(e) => setUploadType(e.target.value)}
+            style={inputStyle}
+          >
+            <option value="">Select type</option>
+            <option value="Forms">Forms</option>
+            <option value="Test Results">Test Results</option>
+            <option value="Scans">Scans</option>
+            <option value="Notes">Notes</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
 
         <div style={{ display: "grid", gap: "0.35rem" }}>
           <label style={labelStyle}>File</label>
