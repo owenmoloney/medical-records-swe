@@ -60,7 +60,10 @@ export default function BookingRegistrationForm({ selectedDoctor, onRegistration
         created_at: Timestamp.fromDate(new Date())
       });
 
-      if (onUidReady) onUidReady(user.uid);
+
+if (onUidReady) {
+  onUidReady(user.uid);
+}
       setStatus("Patient registered successfully! Verification email sent.");
 
       setFormData({
