@@ -4,6 +4,8 @@ import { db, auth } from "../firebase";
 import { collection, addDoc, Timestamp, doc, setDoc } from "firebase/firestore";
 import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
 
+const genders = ["Male", "Female", "Other"];
+
 export default function BookingRegistrationForm({ selectedDoctor, onRegistrationComplete, onUidReady }) {
   const [formData, setFormData] = useState({
     first_name: "",
@@ -15,7 +17,7 @@ export default function BookingRegistrationForm({ selectedDoctor, onRegistration
     gender: "",
     phone_number: "",
     emergency_contact_name: "",
-    emergency_contact_phone: ""
+    emergency_contact_phone: "",
   });
 
   const [status, setStatus] = useState("");
@@ -29,17 +31,19 @@ export default function BookingRegistrationForm({ selectedDoctor, onRegistration
     e.preventDefault();
     setStatus("Saving...");
 
+    if (!genders.includes(formData.gender)) {
+      setStatus("❌ Invalid Gender selected.");
+      return;
+    }
+
     try {
-      // Create user
       const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
       const user = userCredential.user;
 
-      // Send verification email
       await sendEmailVerification(user);
 
       const patient_id = Date.now();
 
-      // Add patient info to Firestore
       await addDoc(collection(db, "Patients"), {
         ...formData,
         patient_id,
@@ -48,7 +52,6 @@ export default function BookingRegistrationForm({ selectedDoctor, onRegistration
         doctor_id: selectedDoctor.id
       });
 
-      // Add user record for login/role
       await setDoc(doc(db, "Users", user.uid), {
         email: formData.email,
         role: "patient",
@@ -57,13 +60,9 @@ export default function BookingRegistrationForm({ selectedDoctor, onRegistration
         created_at: Timestamp.fromDate(new Date())
       });
 
-      // ✅ Pass UID back to parent only if the callback exists
-      if (onUidReady) {
-        onUidReady(user.uid);
-      } 
+      if (onUidReady) onUidReady(user.uid);
       setStatus("Patient registered successfully! Verification email sent.");
 
-      // Reset form
       setFormData({
         first_name: "",
         last_name: "",
@@ -77,7 +76,6 @@ export default function BookingRegistrationForm({ selectedDoctor, onRegistration
         emergency_contact_phone: ""
       });
 
-      // ✅ Show booking section
       if (onRegistrationComplete) onRegistrationComplete();
 
     } catch (error) {
@@ -86,7 +84,6 @@ export default function BookingRegistrationForm({ selectedDoctor, onRegistration
     }
   };
 
-  // Styling for inputs and buttons
   const inputStyle = {
     width: "100%",
     borderRadius: "999px",
@@ -115,17 +112,71 @@ export default function BookingRegistrationForm({ selectedDoctor, onRegistration
     <div style={{ maxWidth: 520, margin: "1rem auto", padding: "1rem", border: "1px solid #e5e7eb", borderRadius: "1rem" }}>
       <h3 style={{ textAlign: "center", marginBottom: "1rem" }}>Register to Book Appointment</h3>
       <form onSubmit={handleSubmit} style={{ display: "grid", gap: "0.8rem" }}>
-        <input style={inputStyle} name="first_name" placeholder="First Name" value={formData.first_name} onChange={handleChange} required />
-        <input style={inputStyle} name="last_name" placeholder="Last Name" value={formData.last_name} onChange={handleChange} required />
-        <input style={inputStyle} type="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} required />
-        <input style={inputStyle} type="password" name="password" placeholder="Password" value={formData.password} onChange={handleChange} required />
-        <input style={inputStyle} name="address" placeholder="Address" value={formData.address} onChange={handleChange} />
-        <input style={inputStyle} type="date" name="date_of_birth" placeholder="Date of Birth" value={formData.date_of_birth} onChange={handleChange} />
-        <input style={inputStyle} name="gender" placeholder="Gender" value={formData.gender} onChange={handleChange} />
-        <input style={inputStyle} name="phone_number" placeholder="Phone Number" value={formData.phone_number} onChange={handleChange} required />
-        <input style={inputStyle} name="emergency_contact_name" placeholder="Emergency Contact Name" value={formData.emergency_contact_name} onChange={handleChange} />
-        <input style={inputStyle} name="emergency_contact_phone" placeholder="Emergency Contact Phone" value={formData.emergency_contact_phone} onChange={handleChange} />
+        
+        <div>
+          <label htmlFor="first_name">First Name</label>
+          <input style={inputStyle} id="first_name" name="first_name" placeholder="First Name" value={formData.first_name} onChange={handleChange} required />
+        </div>
+
+        <div>
+          <label htmlFor="last_name">Last Name</label>
+          <input style={inputStyle} id="last_name" name="last_name" placeholder="Last Name" value={formData.last_name} onChange={handleChange} required />
+        </div>
+
+        <div>
+          <label htmlFor="email">Email</label>
+          <input style={inputStyle} type="email" id="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} required />
+        </div>
+
+        <div>
+          <label htmlFor="password">Password</label>
+          <input style={inputStyle} type="password" id="password" name="password" placeholder="Password" value={formData.password} onChange={handleChange} required />
+        </div>
+
+        <div>
+          <label htmlFor="address">Address</label>
+          <input style={inputStyle} id="address" name="address" placeholder="Address" value={formData.address} onChange={handleChange} />
+        </div>
+
+        <div>
+          <label htmlFor="date_of_birth">Date of Birth</label>
+          <input style={inputStyle} type="date" id="date_of_birth" name="date_of_birth" value={formData.date_of_birth} onChange={handleChange} required />
+        </div>
+
+        <div>
+          <label htmlFor="phone_number">Phone Number</label>
+          <input style={inputStyle} id="phone_number" name="phone_number" placeholder="Phone Number" value={formData.phone_number} onChange={handleChange} required />
+        </div>
+
+        <div>
+          <label htmlFor="emergency_contact_name">Emergency Contact Name</label>
+          <input style={inputStyle} id="emergency_contact_name" name="emergency_contact_name" placeholder="Emergency Contact Name" value={formData.emergency_contact_name} onChange={handleChange} />
+        </div>
+
+        <div>
+          <label htmlFor="emergency_contact_phone">Emergency Contact Phone</label>
+          <input style={inputStyle} id="emergency_contact_phone" name="emergency_contact_phone" placeholder="Emergency Contact Phone" value={formData.emergency_contact_phone} onChange={handleChange} />
+        </div>
+
+        <div>
+          <label htmlFor="gender">Gender</label>
+          <select
+            id="gender"
+            name="gender"
+            value={formData.gender}
+            onChange={handleChange}
+            required
+            style={inputStyle}
+          >
+            <option value="">Select Gender</option>
+            {genders.map((gen) => (
+              <option key={gen} value={gen}>{gen}</option>
+            ))}
+          </select>
+        </div>
+
         <button style={buttonStyle} type="submit">Register & Continue Booking</button>
+
       </form>
       {status && <p style={{ textAlign: "center", marginTop: "0.5rem" }}>{status}</p>}
     </div>

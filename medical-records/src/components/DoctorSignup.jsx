@@ -4,7 +4,12 @@ import { collection, addDoc, Timestamp, doc, setDoc } from "firebase/firestore";
 import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 
-
+const allowedLocations = [
+    "New York City",
+    "Boston",
+    "New Jersey City",
+    "Long Island"
+  ];
 
 function DoctorSignup() {
   const navigate = useNavigate(); // <-- put it here
@@ -14,7 +19,8 @@ function DoctorSignup() {
     email: "",
     password: "",
     phone_number: "",
-    specialty: ""
+    specialty: "",
+    location: ""
   });
 
   const [status, setStatus] = useState("");
@@ -27,6 +33,12 @@ function DoctorSignup() {
 const handleSubmit = async (e) => {
   e.preventDefault();
   setStatus("Saving...");
+
+  if (!allowedLocations.includes(formData.location)) {
+  setStatus("❌ Invalid location selected.");
+  return;
+  } 
+
 
   try {
     // 1️⃣ Create Firebase Auth user
@@ -105,7 +117,18 @@ const handleSubmit = async (e) => {
         <input placeholder="Password" type="password" name="password" value={formData.password} onChange={handleChange} required style={inputStyle} />
         <input placeholder="Phone Number" name="phone_number" value={formData.phone_number} onChange={handleChange} required style={inputStyle} />
         <input placeholder="Specialty" name="specialty" value={formData.specialty} onChange={handleChange} required style={inputStyle} />
-
+        <select
+          name="location"
+          value={formData.location}
+          onChange={handleChange}
+          required
+          style={inputStyle}
+        >
+          <option value="">Select Location</option>
+            {allowedLocations.map((loc) => (
+            <option key={loc} value={loc}>{loc}</option>
+          ))}
+</select>
         <div style={{ display: "flex", justifyContent: "center", gap: "1rem", marginTop: "1.1rem" }}>
           <button type="button" style={buttonSecondary} onClick={() => setFormData({ first_name: "", last_name: "", email: "", password: "", phone_number: "", specialty: "" })}>
             Cancel
