@@ -17,8 +17,6 @@ export default function FindDoctor() {
   const [showRegistration, setShowRegistration] = useState(false);
   const [registrationComplete, setRegistrationComplete] = useState(false); 
   const [patientUid, setPatientUid] = useState(""); 
-
-
   const locations = ["New York City", "Boston", "New Jersey City", "Long Island"];
 
   useEffect(() => {
