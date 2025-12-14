@@ -5,7 +5,7 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import DoctorSignup from "../components/DoctorSignup";
-
+import "./Login.css";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -41,6 +41,14 @@ export default function Login() {
  return (
     <div className="app-shell">
       <div className="card card--compact">
+        <button
+           type="button"
+           className="back-button"
+           onClick={() => navigate(-1)}
+           >
+          ← Back
+        </button>
+
         <h1 className="card-title">Medical Login</h1>
 
         <form onSubmit={handleLogin}>
