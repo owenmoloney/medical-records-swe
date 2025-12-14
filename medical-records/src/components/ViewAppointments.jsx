@@ -101,7 +101,9 @@ export default function ViewAppointments() {
       {upcoming.length === 0 ? (
         <p style={emptyText}>No upcoming appointments.</p>
       ) : (
-        upcoming.map((a) => <AppointmentCard key={a.id} appt={a} />)
+        upcoming.map((a) => (
+          <AppointmentCard key={a.id} appt={a} isUpcoming />
+        ))
       )}
 
       {/* Previous Appointments */}
@@ -109,14 +111,16 @@ export default function ViewAppointments() {
       {past.length === 0 ? (
         <p style={emptyText}>No previous appointments.</p>
       ) : (
-        past.map((a) => <AppointmentCard key={a.id} appt={a} />)
+        past.map((a) => (
+          <AppointmentCard key={a.id} appt={a} isUpcoming={false} />
+        ))
       )}
     </div>
   );
 }
 
 // Appointment card component
-function AppointmentCard({ appt }) {
+function AppointmentCard({ appt, isUpcoming }) {
 
   const handleCancel = async () => {
     try {
@@ -143,21 +147,23 @@ function AppointmentCard({ appt }) {
         <strong>Location:</strong> {appt.location || "Unknown"}
       </div>
 
-      <button
-        onClick={handleCancel}
-        style={{
-          marginTop: "0.8rem",
-          padding: "0.45rem 0.9rem",
-          fontSize: "0.85rem",
-          backgroundColor: "#ef4444",
-          color: "white",
-          border: "none",
-          borderRadius: "12px",
-          cursor: "pointer",
-        }}
-      >
-        Cancel Appointment
-      </button>
+      {isUpcoming && (
+        <button
+          onClick={handleCancel}
+          style={{
+            marginTop: "0.8rem",
+            padding: "0.45rem 0.9rem",
+            fontSize: "0.85rem",
+            backgroundColor: "#ef4444",
+            color: "white",
+            border: "none",
+            borderRadius: "12px",
+            cursor: "pointer",
+          }}
+        >
+          Cancel Appointment
+        </button>
+      )}
 
     </div>
   );
