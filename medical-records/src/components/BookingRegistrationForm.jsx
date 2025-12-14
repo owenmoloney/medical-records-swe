@@ -62,6 +62,10 @@ export default function BookingRegistrationForm({ selectedDoctor, onRegistration
 if (onUidReady) {
   onUidReady(user.uid);
 }
+
+      if (onUidReady) {
+        onUidReady(user.uid);
+      }
       setStatus("Patient registered successfully! Verification email sent.");
 
       setFormData({
