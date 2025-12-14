@@ -15,6 +15,15 @@ export default function ViewAppointments() {
   const [patientUid, setPatientUid] = useState(null);
   const [appointments, setAppointments] = useState([]);
 
+  // Helper to format full address
+  const formatAddress = (address) => {
+    if (!address) return "Unknown";
+    const { street, city, state, zip } = address;
+    const line1 = street || "";
+    const line2 = [city, state, zip].filter(Boolean).join(", ");
+    return line1 ? `${line1}, ${line2}` : line2 || "Unknown";
+  };
+
   // 1️⃣ Get patient UID from Patients collection
   useEffect(() => {
     const fetchPatientUid = async () => {
@@ -29,7 +38,7 @@ export default function ViewAppointments() {
         const snap = await getDocs(patientQuery);
 
         if (!snap.empty) {
-          setPatientUid(snap.docs[0].data().uid); // the uid field
+          setPatientUid(snap.docs[0].data().uid);
         } else {
           console.warn("No patient record found for this user.");
         }
@@ -41,41 +50,38 @@ export default function ViewAppointments() {
     fetchPatientUid();
   }, []);
 
-  // 2️⃣ Fetch appointments and doctor names
+  // 2️⃣ Fetch appointments and doctor info
   useEffect(() => {
     if (!patientUid) return;
-  
+
     const reservationsRef = collection(db, "Reservations");
     const q = query(reservationsRef, where("uid", "==", patientUid));
-  
+
     const unsubscribe = onSnapshot(q, async (snapshot) => {
       const appointmentsWithDoctors = await Promise.all(
         snapshot.docs.map(async (docSnap) => {
           const data = docSnap.data();
-    
-          // Convert Firestore timestamp to JS Date
           const appointmentDateJS = data.appointmentDate.toDate();
-    
-          // Fetch doctor name
+
           let doctorName = "Unknown Doctor";
-          let location = "Unknown Location";
+          let fullAddress = "Unknown";
+
           if (data.doctorId) {
             const doctorDoc = await getDoc(doc(db, "Doctors", data.doctorId));
             if (doctorDoc.exists()) {
               const d = doctorDoc.data();
               doctorName = `${d.first_name} ${d.last_name}`;
-              location = d.location || "Unknown";
+              fullAddress = formatAddress(d.address);
             }
           }
-    
-          return { id: docSnap.id, ...data, doctorName, location, appointmentDateJS };
+
+          return { id: docSnap.id, ...data, doctorName, fullAddress, appointmentDateJS };
         })
       );
-    
+
       setAppointments(appointmentsWithDoctors);
-    });    
-  
-    // Clean up listener on unmount
+    });
+
     return () => unsubscribe();
   }, [patientUid]);
 
@@ -85,35 +91,22 @@ export default function ViewAppointments() {
   const past = appointments.filter((a) => a.appointmentDateJS < now);
 
   return (
-    <div
-      style={{
-        maxWidth: 520,
-        margin: "0 auto",
-        fontFamily:
-          "SF Pro Display, -apple-system, BlinkMacSystemFont, Inter, system-ui, sans-serif",
-      }}
-    >
+    <div style={{ maxWidth: 520, margin: "0 auto", fontFamily: "SF Pro Display, -apple-system, BlinkMacSystemFont, Inter, system-ui, sans-serif" }}>
       <h2 style={titleStyle}>View Appointments</h2>
       <p style={descStyle}>View previous and upcoming appointments below.</p>
 
-      {/* Upcoming Appointments */}
       <h3 style={sectionHeader}>Upcoming Appointments</h3>
       {upcoming.length === 0 ? (
         <p style={emptyText}>No upcoming appointments.</p>
       ) : (
-        upcoming.map((a) => (
-          <AppointmentCard key={a.id} appt={a} isUpcoming />
-        ))
+        upcoming.map((a) => <AppointmentCard key={a.id} appt={a} isUpcoming />)
       )}
 
-      {/* Previous Appointments */}
       <h3 style={sectionHeader}>Previous Appointments</h3>
       {past.length === 0 ? (
         <p style={emptyText}>No previous appointments.</p>
       ) : (
-        past.map((a) => (
-          <AppointmentCard key={a.id} appt={a} isUpcoming={false} />
-        ))
+        past.map((a) => <AppointmentCard key={a.id} appt={a} isUpcoming={false} />)
       )}
     </div>
   );
@@ -121,7 +114,6 @@ export default function ViewAppointments() {
 
 // Appointment card component
 function AppointmentCard({ appt, isUpcoming }) {
-
   const handleCancel = async () => {
     try {
       await deleteDoc(doc(db, "Reservations", appt.id));
@@ -133,9 +125,7 @@ function AppointmentCard({ appt, isUpcoming }) {
 
   return (
     <div style={cardStyle}>
-      <div
-        style={{ marginBottom: "0.4rem", fontSize: "0.95rem", fontWeight: 600 }}
-      >
+      <div style={{ marginBottom: "0.4rem", fontSize: "0.95rem", fontWeight: 600 }}>
         <strong>Doctor:</strong> {appt.doctorName}
       </div>
 
@@ -144,7 +134,8 @@ function AppointmentCard({ appt, isUpcoming }) {
       </div>
 
       <div style={{ fontSize: "0.85rem", color: "#4b5563", marginTop: "0.25rem" }}>
-        <strong>Location:</strong> {appt.location || "Unknown"}
+        <strong>Location:</strong><br />
+        {appt.fullAddress}
       </div>
 
       {isUpcoming && (
@@ -164,7 +155,6 @@ function AppointmentCard({ appt, isUpcoming }) {
           Cancel Appointment
         </button>
       )}
-
     </div>
   );
 }

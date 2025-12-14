@@ -5,19 +5,16 @@ import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/
 import { useNavigate } from "react-router-dom";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
-
 const allowedLocations = [
-    "New York City",
-    "Boston",
-    "New Jersey City",
-    "Long Island"
-  ];
-
-
+  "New York City",
+  "Boston",
+  "New Jersey City",
+  "Long Island"
+];
 
 function DoctorSignup() {
-  const navigate = useNavigate(); // <-- put it here
-  
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
@@ -26,12 +23,7 @@ function DoctorSignup() {
     phone_number: "",
     specialty: "",
     patients: "",
-    address: {
-      street: "",
-      city: "",
-      state: "",
-      zip: ""
-    },
+    address: { street: "", city: "", state: "", zip: "" },
     location: "",
     photoFile: null
   });
@@ -45,102 +37,88 @@ function DoctorSignup() {
 
   const handleAddressChange = (e) => {
     const { name, value } = e.target;
-
     setFormData((prev) => ({
       ...prev,
-      address: {
-        ...prev.address,
-        [name]: value
-      }
+      address: { ...prev.address, [name]: value }
     }));
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setStatus("Saving...");
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setStatus("Saving...");
-
-  if (!allowedLocations.includes(formData.location)) {
-    setStatus("Invalid location selected.");
-    return;
-  }
-
-  try {
-    // 1️⃣ Create Auth user FIRST
-    const userCredential = await createUserWithEmailAndPassword(
-      auth,
-      formData.email,
-      formData.password
-    );
-    const user = userCredential.user;
-
-    await sendEmailVerification(user);
-
-    // 2️⃣ Upload photo AFTER auth
-    const storage = getStorage();
-    let photoURL = "";
-
-    if (formData.photoFile) {
-      const photoRef = ref(
-        storage,
-        `doctor_photos/${user.uid}_${formData.photoFile.name}`
-      );
-      await uploadBytes(photoRef, formData.photoFile);
-      photoURL = await getDownloadURL(photoRef);
+    // ✅ Validate location
+    if (!allowedLocations.includes(formData.location)) {
+      setStatus("Invalid location selected.");
+      return;
     }
 
-    // 3️⃣ Save doctor data
-    const doctor_id = Date.now();
+    // ✅ Validate email domain
+    if (!formData.email.endsWith("@fordham.edu")) {
+      setStatus("Doctors must register with a verified email, contact your IT depart for verification");
+      return;
+    }
 
-    await addDoc(collection(db, "Doctors"), {
-      first_name: formData.first_name,
-      last_name: formData.last_name,
-      email: formData.email,
-      specialty: formData.specialty,
-      location: formData.location,
-      address: formData.address,   
-      patients: Number(formData.patients),
-      phone_number: Number(formData.phone_number),
-      doctor_id,
-      user_id: user.uid,
-      photoURL,
-      created_at: Timestamp.now()
-    });
+    try {
+      // 1️⃣ Create Auth user
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        formData.email,
+        formData.password
+      );
+      const user = userCredential.user;
 
-    // 4️⃣ Save user role
-    await setDoc(doc(db, "Users", user.uid), {
-      uid: user.uid,
-      email: formData.email,
-      role: "doctor",
-      created_at: Timestamp.now()
-    });
+      await sendEmailVerification(user);
 
-    setStatus("✅ Doctor registered successfully!");
-    setTimeout(() => navigate("/login"), 3000);
+      // 2️⃣ Upload photo
+      const storage = getStorage();
+      let photoURL = "";
 
-  } catch (error) {
-    console.error(error);
-    setStatus("❌ Error creating doctor");
-  }
-};
+      if (formData.photoFile) {
+        const photoRef = ref(storage, `doctor_photos/${user.uid}_${formData.photoFile.name}`);
+        await uploadBytes(photoRef, formData.photoFile);
+        photoURL = await getDownloadURL(photoRef);
+      }
 
+      // 3️⃣ Save doctor data
+      const doctor_id = Date.now();
+
+      await addDoc(collection(db, "Doctors"), {
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+        email: formData.email,
+        specialty: formData.specialty,
+        location: formData.location,
+        address: formData.address,
+        patients: Number(formData.patients),
+        phone_number: Number(formData.phone_number),
+        doctor_id,
+        user_id: user.uid,
+        photoURL,
+        created_at: Timestamp.now()
+      });
+
+      // 4️⃣ Save user role
+      await setDoc(doc(db, "Users", user.uid), {
+        uid: user.uid,
+        email: formData.email,
+        role: "doctor",
+        created_at: Timestamp.now()
+      });
+
+      setStatus("✅ Doctor registered successfully!");
+      setTimeout(() => navigate("/login"), 3000);
+
+    } catch (error) {
+      console.error(error);
+      setStatus("❌ Error creating doctor: " + error.message);
+    }
+  };
 
   return (
-    <div
-      style={{
-        maxWidth: 520,
-        margin: "0 auto",
-        fontFamily: "SF Pro Display, -apple-system, BlinkMacSystemFont, Inter, system-ui, sans-serif",
-        textAlign: "left"
-      }}
-    >
-      <h2 style={{ textAlign: "center", fontSize: "1.1rem", letterSpacing: "0.18em", textTransform: "uppercase", color: "#4b5563", marginBottom: "0.5rem" }}>
-        Doctor Registration
-      </h2>
-
-      <p style={{ textAlign: "center", fontSize: "0.9rem", color: "#6b7280", marginBottom: "1.6rem" }}>
-        Create an account for a doctor to access the system.
-      </p>
+    <div style={containerStyle}>
+      <h2 style={titleStyle}>Doctor Registration</h2>
+      <p style={descStyle}>Create an account for a doctor to access the system.</p>
 
       <form onSubmit={handleSubmit} style={{ display: "grid", gap: "0.85rem" }}>
         <input placeholder="First Name" name="first_name" value={formData.first_name} onChange={handleChange} required style={inputStyle} />
@@ -148,57 +126,18 @@ const handleSubmit = async (e) => {
         <input placeholder="Email" type="email" name="email" value={formData.email} onChange={handleChange} required style={inputStyle} />
         <input placeholder="Password" type="password" name="password" value={formData.password} onChange={handleChange} required style={inputStyle} />
         <input placeholder="Phone Number" name="phone_number" value={formData.phone_number} onChange={handleChange} required style={inputStyle} />
-      <input
-  placeholder="Street Address"
-  name="street"
-  value={formData.address.street}
-  onChange={handleAddressChange}
-  required
-  style={inputStyle}
-/>
-
-<input
-  placeholder="City"
-  name="city"
-  value={formData.address.city}
-  onChange={handleAddressChange}
-  required
-  style={inputStyle}
-/>
-
-<input
-  placeholder="State"
-  name="state"
-  value={formData.address.state}
-  onChange={handleAddressChange}
-  required
-  style={inputStyle}
-/>
-
-<input
-  placeholder="ZIP Code"
-  name="zip"
-  value={formData.address.zip}
-  onChange={handleAddressChange}
-  required
-  style={inputStyle}
-/>
-
+        <input placeholder="Street Address" name="street" value={formData.address.street} onChange={handleAddressChange} required style={inputStyle} />
+        <input placeholder="City" name="city" value={formData.address.city} onChange={handleAddressChange} required style={inputStyle} />
+        <input placeholder="State" name="state" value={formData.address.state} onChange={handleAddressChange} required style={inputStyle} />
+        <input placeholder="ZIP Code" name="zip" value={formData.address.zip} onChange={handleAddressChange} required style={inputStyle} />
         <input placeholder="Specialty" name="specialty" value={formData.specialty} onChange={handleChange} required style={inputStyle} />
         <input type="number" placeholder="How many patients does this Doctor have?" name="patients" value={formData.patients} onChange={handleChange} required style={inputStyle} />
-        <input type="file" accept="image/*" placeholder="Profile Picture"   required onChange={(e) => setFormData((prev) => ({ ...prev,photoFile: e.target.files[0]}))}/>
-        <select
-          name="location"
-          value={formData.location}
-          onChange={handleChange}
-          required
-          style={inputStyle}
-        >
+        <input type="file" accept="image/*" required onChange={(e) => setFormData(prev => ({ ...prev, photoFile: e.target.files[0] }))} />
+        <select name="location" value={formData.location} onChange={handleChange} required style={inputStyle}>
           <option value="">Select Location</option>
-            {allowedLocations.map((loc) => (
-            <option key={loc} value={loc}>{loc}</option>
-          ))}
+          {allowedLocations.map(loc => (<option key={loc} value={loc}>{loc}</option>))}
         </select>
+
         <div style={{ display: "flex", justifyContent: "center", gap: "1rem", marginTop: "1.1rem" }}>
           <button type="button" style={buttonSecondary} onClick={() => setFormData({ first_name: "", last_name: "", email: "", password: "", phone_number: "", specialty: "" })}>
             Cancel
@@ -211,6 +150,14 @@ const handleSubmit = async (e) => {
     </div>
   );
 }
+
+// Styles
+const containerStyle = {
+  maxWidth: 520,
+  margin: "0 auto",
+  fontFamily: "SF Pro Display, -apple-system, BlinkMacSystemFont, Inter, system-ui, sans-serif",
+  textAlign: "left"
+};
 
 const inputStyle = {
   width: "100%",
@@ -245,6 +192,22 @@ const buttonSecondary = {
   border: "1.5px solid #D1D5DB",
   boxShadow: "0 4px 12px rgba(0,0,0,0.04)",
   transition: "0.25s ease"
+};
+
+const titleStyle = {
+  textAlign: "center",
+  fontSize: "1.1rem",
+  letterSpacing: "0.18em",
+  textTransform: "uppercase",
+  color: "#4b5563",
+  marginBottom: "0.5rem"
+};
+
+const descStyle = {
+  textAlign: "center",
+  fontSize: "0.9rem",
+  color: "#6b7280",
+  marginBottom: "1.6rem"
 };
 
 export default DoctorSignup;
