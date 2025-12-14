@@ -59,11 +59,7 @@ export default function BookingRegistrationForm({ selectedDoctor, onRegistration
         doctor_id: selectedDoctor.id,
         created_at: Timestamp.fromDate(new Date())
       });
-<<<<<<< HEAD
 
-
-=======
->>>>>>> upstream/main
 if (onUidReady) {
   onUidReady(user.uid);
 }

@@ -4,6 +4,8 @@ import "./FindDoctor.css";
 import { collection, getDocs, query, where, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase";
 import BookingRegistrationForm from "../components/BookingRegistrationForm";
+import { useNavigate } from "react-router-dom";
+
 
 const formatAddress = (address) => {
   if (!address) return "Address not available";
@@ -24,6 +26,7 @@ export default function FindDoctor() {
   const [registrationComplete, setRegistrationComplete] = useState(false); 
   const [patientUid, setPatientUid] = useState(""); 
   const locations = ["New York City", "Boston", "New Jersey City", "Long Island"];
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!location) return;
@@ -117,6 +120,7 @@ return (
   <>
     <div className="find-doctor-banner">
       <h1>Find a Doctor in Your Area</h1>
+      <button className="back-button" onClick={() => navigate(-1)}>Back</button>
       <div className="banner-accent"></div> {/* ⭐ subtle accent */}
     </div>
 
@@ -167,12 +171,42 @@ return (
         />
       )}
 
-      {selectedDoctor && registrationComplete && (
-        <div className="booking-section">
-          <h2>Book an Appointment with Dr. {selectedDoctor.first_name} {selectedDoctor.last_name}</h2>
-          {/* booking form */}
-        </div>
-      )}
+{/* Show booking section only after registration */}
+{selectedDoctor && registrationComplete && (
+  <div className="booking-section">
+    <h2>Book an Appointment with Dr. {selectedDoctor.first_name} {selectedDoctor.last_name}</h2>
+
+    <label>
+      Your Email:
+      <input
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="you@example.com"
+      />
+    </label>
+
+    <label>
+      Date:
+      <input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} />
+    </label>
+
+    {availableTimes.length > 0 && (
+      <label>
+        Time:
+        <select value={selectedTime} onChange={(e) => setSelectedTime(parseInt(e.target.value))}>
+          <option value="">Select Time</option>
+          {availableTimes.map(hour => (
+            <option key={hour} value={hour}>{hour}:00</option>
+          ))}
+        </select>
+      </label>
+    )}
+
+    <button onClick={handleBook}>Request Appointment</button>
+  </div>
+)}
+
     </div>
   </>
 );

@@ -190,3 +190,36 @@ body {
     transform: translateY(0);
   }
 }
+.find-doctor-banner {
+  position: relative;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.9),
+    rgba(240, 244, 255, 0.9)
+  );
+  padding: 3rem 1.5rem 2.5rem;
+  border-radius: 28px;
+  text-align: center;
+  box-shadow: 0 25px 50px rgba(15, 23, 42, 0.12);
+  margin-bottom: 3rem;
+}
+
+.back-button {
+  position: absolute;
+  top: 1.2rem;
+  right: 1.5rem;
+  background: linear-gradient(135deg, #34d399, #22c1c3);
+  color: white;
+  border: none;
+  border-radius: 999px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-weight: 500;
+  box-shadow: 0 8px 20px rgba(34, 193, 195, 0.35);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.back-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 25px rgba(34, 193, 195, 0.45);
+}
