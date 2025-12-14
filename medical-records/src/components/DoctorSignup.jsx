@@ -3,6 +3,8 @@ import { db, auth } from "../firebase";
 import { collection, addDoc, Timestamp, doc, setDoc } from "firebase/firestore";
 import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+
 
 const allowedLocations = [
     "New York City",
@@ -20,7 +22,9 @@ function DoctorSignup() {
     password: "",
     phone_number: "",
     specialty: "",
-    location: ""
+    patients: "",
+    location: "",
+    photoFile: null
   });
 
   const [status, setStatus] = useState("");
@@ -35,32 +39,41 @@ const handleSubmit = async (e) => {
   setStatus("Saving...");
 
   if (!allowedLocations.includes(formData.location)) {
-  setStatus("❌ Invalid location selected.");
+  setStatus("Invalid location selected.");
   return;
   } 
 
+  const storage = getStorage();
+  let photoURL = "";
+
+  if (formData.photoFile) {
+  const photoRef = ref(storage, `doctor_photos/${Date.now()}_${formData.photoFile.name}`);
+  await uploadBytes(photoRef, formData.photoFile);
+  photoURL = await getDownloadURL(photoRef);
+}
 
   try {
-    // 1️⃣ Create Firebase Auth user
+    // 1️ Create Firebase Auth user
     const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
     const user = userCredential.user;
 
-    // 2️⃣ Send email verification
+    // 2️ Send email verification
     await sendEmailVerification(user); // modular SDK function
 
-    // 3️⃣ Generate doctor_id
+    // 3️ Generate doctor_id
     const doctor_id = Date.now();
 
-    // 4️⃣ Add doctor to Doctors collection
+    // 4️ Add doctor to Doctors collection
     await addDoc(collection(db, "Doctors"), {
       ...formData,
+      patients: Number(formData.patients),
       doctor_id,
       user_id: user.uid,
       phone_number: Number(formData.phone_number),
       created_at: Timestamp.now()
     });
 
-    // 5️⃣ Add user to Users collection for login
+    // 5️Add user to Users collection for login
     await setDoc(doc(db, "Users", user.uid), {
       uid: user.uid,
       email: formData.email,
@@ -68,7 +81,17 @@ const handleSubmit = async (e) => {
       created_at: Timestamp.now()
     });
 
-    // 6️⃣ Show success message and redirect to login
+    await addDoc(collection(db, "Doctors"), {
+      ...formData,
+      photoURL,                    // ⭐ add this ⭐
+      patients: Number(formData.patients),
+      phone_number: Number(formData.phone_number),
+      doctor_id,
+      user_id: user.uid,
+      created_at: Timestamp.now()
+    });
+
+    // 6️ Show success message and redirect to login
     setStatus("✅ Doctor registered successfully! Check your email for verification.");
     
     // Optional: delay redirect for a few seconds so user sees the message
@@ -76,14 +99,16 @@ const handleSubmit = async (e) => {
       navigate("/login"); // make sure to import useNavigate from react-router-dom
     }, 3000);
 
-    // 7️⃣ Reset form
+    // 7️ Reset form
     setFormData({
       first_name: "",
       last_name: "",
       email: "",
       password: "",
       phone_number: "",
-      specialty: ""
+      specialty: "",
+      patients: "",
+      location: ""
     });
 
   } catch (error) {
@@ -117,6 +142,8 @@ const handleSubmit = async (e) => {
         <input placeholder="Password" type="password" name="password" value={formData.password} onChange={handleChange} required style={inputStyle} />
         <input placeholder="Phone Number" name="phone_number" value={formData.phone_number} onChange={handleChange} required style={inputStyle} />
         <input placeholder="Specialty" name="specialty" value={formData.specialty} onChange={handleChange} required style={inputStyle} />
+        <input type="number" placeholder="How many patients does this Doctor have?" name="patients" value={formData.patients} onChange={handleChange} required style={inputStyle} />
+        <input type="file" accept="image/*" placeholder="Profile Picture"   required/>
         <select
           name="location"
           value={formData.location}
@@ -128,7 +155,7 @@ const handleSubmit = async (e) => {
             {allowedLocations.map((loc) => (
             <option key={loc} value={loc}>{loc}</option>
           ))}
-</select>
+        </select>
         <div style={{ display: "flex", justifyContent: "center", gap: "1rem", marginTop: "1.1rem" }}>
           <button type="button" style={buttonSecondary} onClick={() => setFormData({ first_name: "", last_name: "", email: "", password: "", phone_number: "", specialty: "" })}>
             Cancel

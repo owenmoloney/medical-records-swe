@@ -124,6 +124,11 @@ export default function FindDoctor() {
         {doctors.length === 0 && location && <p>No available doctors in this area.</p>}
         {doctors.map((doc) => (
           <div key={doc.id} className="doctor-card">
+              <img 
+               src={doc.photoURL || "/default-doctor.png"} 
+               alt="Doctor photo" 
+              className="doctor-photo"
+              />
             <h3>{doc.first_name} {doc.last_name}</h3>
             <p><strong>Location:</strong> {doc.location}</p>
             <p><strong>Specialty:</strong> {doc.specialty || "General"}</p>
