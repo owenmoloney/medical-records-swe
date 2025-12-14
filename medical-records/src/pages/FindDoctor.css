@@ -1,105 +1,192 @@
-.find-doctor-container {
-  max-width: 900px;
-  margin: 2rem auto;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  padding: 0 1rem;
+body {
+  background-color: #f0f4ff;
 }
+.find-doctor-banner {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.9),
+    rgba(240, 244, 255, 0.9)
+  );
+  padding: 3rem 1.5rem 2.5rem;
+  border-radius: 28px;
+  text-align: center;
+  box-shadow: 0 25px 50px rgba(15, 23, 42, 0.12);
+  margin-bottom: 3rem;
+}
+
+.find-doctor-banner h1 {
+  margin: 0;
+  font-size: 2.4rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: #0f172a;
+}
+
+.find-doctor-container {
+  max-width: 1100px;
+  margin: 2.5rem auto;
+  padding: 0 1.5rem 3rem;
+  font-family: SF Pro Display, -apple-system, BlinkMacSystemFont, Inter, system-ui, sans-serif;
+}
+
+/* Page title */
 
 .find-doctor-container h1 {
   text-align: center;
-  margin-bottom: 1.5rem;
-  color: #2c3e50;
+  margin-bottom: 2rem;
+  font-size: 2.2rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #0f172a;
 }
 
-select {
+/* Location selector */
+
+.find-doctor-container select {
   display: block;
-  margin: 0 auto 2rem auto;
-  padding: 0.5rem 1rem;
-  font-size: 1rem;
-  border-radius: 8px;
-  border: 1px solid #ccc;
+  margin: 0 auto 2.5rem auto;
+  padding: 0.65rem 1.2rem;
+  font-size: 0.95rem;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: #f0f4ff;
+  color: #111827;
+  outline: none;
 }
+
+/* Doctor grid */
 
 .doctor-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2rem;
 }
 
+/* Doctor card */
+
 .doctor-card {
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10px);
-  border-radius: 15px;
-  padding: 1rem;
-  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-  transition: transform 0.2s, box-shadow 0.2s;
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(14px);
+  border-radius: 22px;
+  padding: 1.4rem;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.15);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .doctor-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 20px rgba(0,0,0,0.3);
+  transform: translateY(-6px);
+  box-shadow: 0 30px 60px rgba(15, 23, 42, 0.22);
 }
 
+/* Doctor photo */
+
+.doctor-photo {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 18px;
+  margin-bottom: 1rem;
+}
+
+/* Doctor info */
+
 .doctor-card h3 {
-  margin-top: 0;
-  color: #34495e;
+  margin: 0.4rem 0 0.6rem;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #0f172a;
 }
 
 .doctor-card p {
   margin: 0.3rem 0;
-  color: #555;
+  font-size: 0.9rem;
+  color: #4b5563;
+  line-height: 1.4;
 }
 
+/* Book button */
+
 .doctor-card button {
-  margin-top: 1rem;
-  background-color: #3498db;
-  color: white;
+  margin-top: 1.2rem;
+  width: 100%;
   border: none;
-  padding: 0.6rem 1rem;
-  border-radius: 10px;
+  border-radius: 999px;
+  padding: 0.7rem 1.4rem;
+  font-size: 0.9rem;
+  font-weight: 600;
   cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.2s;
+  background-image: linear-gradient(135deg, #34d399, #22c1c3);
+  color: #ffffff;
+  box-shadow: 0 10px 25px rgba(34, 193, 195, 0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .doctor-card button:hover {
-  background-color: #2980b9;
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(34, 193, 195, 0.45);
 }
 
+/* Booking section */
+
 .booking-section {
-  margin-top: 2rem;
-  padding: 1.5rem;
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10px);
-  border-radius: 15px;
-  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+  margin-top: 3rem;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(14px);
+  border-radius: 26px;
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.18);
 }
 
 .booking-section h2 {
   margin-top: 0;
-  color: #2c3e50;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #0f172a;
 }
+
+/* Form labels */
 
 .booking-section label {
   display: block;
-  margin: 0.8rem 0 0.3rem;
-  font-weight: bold;
-  color: #34495e;
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #4b5563;
 }
+
+/* Inputs */
 
 .booking-section input,
 .booking-section select {
-  padding: 0.5rem;
-  border-radius: 8px;
-  border: 1px solid #ccc;
   width: 100%;
-  margin-bottom: 0.5rem;
+  margin-top: 0.35rem;
+  padding: 0.65rem 1rem;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  font-size: 0.9rem;
+  outline: none;
+  background-color: #ffffff;
+}
+.banner-accent {
+  width: 90px;
+  height: 4px;
+  margin: 1.4rem auto 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #34d399, #22c1c3);
+  box-shadow: 0 6px 16px rgba(34, 193, 195, 0.35);
 }
 
-.doctor-photo {
-  width: 100%;
-  height: 180px;
-  object-fit: cover;
-  border-radius: 10px;
-  margin-bottom: 10px;
+.banner-accent {
+  animation: accentFade 0.6s ease-out forwards;
+}
+
+@keyframes accentFade {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

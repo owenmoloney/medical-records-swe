@@ -13,8 +13,11 @@ const allowedLocations = [
     "Long Island"
   ];
 
+
+
 function DoctorSignup() {
   const navigate = useNavigate(); // <-- put it here
+  
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
@@ -23,6 +26,12 @@ function DoctorSignup() {
     phone_number: "",
     specialty: "",
     patients: "",
+    address: {
+      street: "",
+      city: "",
+      state: "",
+      zip: ""
+    },
     location: "",
     photoFile: null
   });
@@ -34,46 +43,71 @@ function DoctorSignup() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleAddressChange = (e) => {
+    const { name, value } = e.target;
+
+    setFormData((prev) => ({
+      ...prev,
+      address: {
+        ...prev.address,
+        [name]: value
+      }
+    }));
+  };
+
+
 const handleSubmit = async (e) => {
   e.preventDefault();
   setStatus("Saving...");
 
   if (!allowedLocations.includes(formData.location)) {
-  setStatus("Invalid location selected.");
-  return;
-  } 
-
-  const storage = getStorage();
-  let photoURL = "";
-
-  if (formData.photoFile) {
-  const photoRef = ref(storage, `doctor_photos/${Date.now()}_${formData.photoFile.name}`);
-  await uploadBytes(photoRef, formData.photoFile);
-  photoURL = await getDownloadURL(photoRef);
-}
+    setStatus("Invalid location selected.");
+    return;
+  }
 
   try {
-    // 1️ Create Firebase Auth user
-    const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+    // 1️⃣ Create Auth user FIRST
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      formData.email,
+      formData.password
+    );
     const user = userCredential.user;
 
-    // 2️ Send email verification
-    await sendEmailVerification(user); // modular SDK function
+    await sendEmailVerification(user);
 
-    // 3️ Generate doctor_id
+    // 2️⃣ Upload photo AFTER auth
+    const storage = getStorage();
+    let photoURL = "";
+
+    if (formData.photoFile) {
+      const photoRef = ref(
+        storage,
+        `doctor_photos/${user.uid}_${formData.photoFile.name}`
+      );
+      await uploadBytes(photoRef, formData.photoFile);
+      photoURL = await getDownloadURL(photoRef);
+    }
+
+    // 3️⃣ Save doctor data
     const doctor_id = Date.now();
 
-    // 4️ Add doctor to Doctors collection
     await addDoc(collection(db, "Doctors"), {
-      ...formData,
+      first_name: formData.first_name,
+      last_name: formData.last_name,
+      email: formData.email,
+      specialty: formData.specialty,
+      location: formData.location,
+      address: formData.address,   
       patients: Number(formData.patients),
+      phone_number: Number(formData.phone_number),
       doctor_id,
       user_id: user.uid,
-      phone_number: Number(formData.phone_number),
+      photoURL,
       created_at: Timestamp.now()
     });
 
-    // 5️Add user to Users collection for login
+    // 4️⃣ Save user role
     await setDoc(doc(db, "Users", user.uid), {
       uid: user.uid,
       email: formData.email,
@@ -81,39 +115,12 @@ const handleSubmit = async (e) => {
       created_at: Timestamp.now()
     });
 
-    await addDoc(collection(db, "Doctors"), {
-      ...formData,
-      photoURL,                    // ⭐ add this ⭐
-      patients: Number(formData.patients),
-      phone_number: Number(formData.phone_number),
-      doctor_id,
-      user_id: user.uid,
-      created_at: Timestamp.now()
-    });
-
-    // 6️ Show success message and redirect to login
-    setStatus("✅ Doctor registered successfully! Check your email for verification.");
-    
-    // Optional: delay redirect for a few seconds so user sees the message
-    setTimeout(() => {
-      navigate("/login"); // make sure to import useNavigate from react-router-dom
-    }, 3000);
-
-    // 7️ Reset form
-    setFormData({
-      first_name: "",
-      last_name: "",
-      email: "",
-      password: "",
-      phone_number: "",
-      specialty: "",
-      patients: "",
-      location: ""
-    });
+    setStatus("✅ Doctor registered successfully!");
+    setTimeout(() => navigate("/login"), 3000);
 
   } catch (error) {
-    console.error("Error adding doctor:", error);
-    setStatus("❌ Error adding doctor. Check console.");
+    console.error(error);
+    setStatus("❌ Error creating doctor");
   }
 };
 
@@ -141,9 +148,45 @@ const handleSubmit = async (e) => {
         <input placeholder="Email" type="email" name="email" value={formData.email} onChange={handleChange} required style={inputStyle} />
         <input placeholder="Password" type="password" name="password" value={formData.password} onChange={handleChange} required style={inputStyle} />
         <input placeholder="Phone Number" name="phone_number" value={formData.phone_number} onChange={handleChange} required style={inputStyle} />
+      <input
+  placeholder="Street Address"
+  name="street"
+  value={formData.address.street}
+  onChange={handleAddressChange}
+  required
+  style={inputStyle}
+/>
+
+<input
+  placeholder="City"
+  name="city"
+  value={formData.address.city}
+  onChange={handleAddressChange}
+  required
+  style={inputStyle}
+/>
+
+<input
+  placeholder="State"
+  name="state"
+  value={formData.address.state}
+  onChange={handleAddressChange}
+  required
+  style={inputStyle}
+/>
+
+<input
+  placeholder="ZIP Code"
+  name="zip"
+  value={formData.address.zip}
+  onChange={handleAddressChange}
+  required
+  style={inputStyle}
+/>
+
         <input placeholder="Specialty" name="specialty" value={formData.specialty} onChange={handleChange} required style={inputStyle} />
         <input type="number" placeholder="How many patients does this Doctor have?" name="patients" value={formData.patients} onChange={handleChange} required style={inputStyle} />
-        <input type="file" accept="image/*" placeholder="Profile Picture"   required/>
+        <input type="file" accept="image/*" placeholder="Profile Picture"   required onChange={(e) => setFormData((prev) => ({ ...prev,photoFile: e.target.files[0]}))}/>
         <select
           name="location"
           value={formData.location}
