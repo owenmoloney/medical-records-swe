@@ -212,10 +212,7 @@ export default function GetPatientInfo() {
           </button>
         </>
       )}
-
-      <p style={{ textAlign: "center", marginTop: 12, color: "#6b7280" }}>
-        {status}
-      </p>
+      
     </div>
   );
 }

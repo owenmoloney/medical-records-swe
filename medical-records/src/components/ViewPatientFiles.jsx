@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { db, auth } from "../firebase";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import SearchPatient from "./SearchPatient";
 
 export default function ViewPatientFiles() {
@@ -8,13 +8,14 @@ export default function ViewPatientFiles() {
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [files, setFiles] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
-  const [filterType, setFilterType] = useState(""); // NEW filter state
-
+  const [filterType, setFilterType] = useState("");
+  const [appointmentFilter, setAppointmentFilter] = useState("");
+  const [appointments, setAppointments] = useState([]);
 
   // Reset selected file when filtertype changes
   useEffect(() => {
     setSelectedFile(null);
-  }, [filterType]);
+  }, [filterType, appointmentFilter]);
 
   // Get current doctor ID
   useEffect(() => {
@@ -22,6 +23,33 @@ export default function ViewPatientFiles() {
       setDoctorId(auth.currentUser.uid);
     }
   }, []);
+
+  // get appointments for selected patient
+  useEffect(() => {
+    if (!selectedPatient?.uid) return;
+  
+    const fetchAppointments = async () => {
+      try {
+        const q = query(
+          collection(db, "Reservations"),
+          where("uid", "==", selectedPatient.uid)
+        );
+  
+        const snapshot = await getDocs(q);
+  
+        const appts = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+  
+        setAppointments(appts);
+      } catch (err) {
+        console.error("Error fetching appointments:", err);
+      }
+    };
+  
+    fetchAppointments();
+  }, [selectedPatient]);
 
   // Fetch files for selected patient
   useEffect(() => {
@@ -39,6 +67,7 @@ export default function ViewPatientFiles() {
 
         setFiles(fetchedFiles);
         setSelectedFile(null);
+        setAppointmentFilter("");
         setFilterType(""); // reset filter when patient changes
       } catch (error) {
         console.error("Error fetching files:", error);
@@ -50,9 +79,14 @@ export default function ViewPatientFiles() {
   }, [selectedPatient]);
 
   // Filter files based on dropdown
-  const filteredFiles = filterType
-    ? files.filter((f) => f.uploadType === filterType)
-    : files;
+  const filteredFiles = files.filter((f) => {
+    const typeMatch = filterType ? f.uploadType === filterType : true;
+    const apptMatch = appointmentFilter
+      ? f.appointmentId === appointmentFilter
+      : true;
+  
+    return typeMatch && apptMatch;
+  });
 
   return (
     <div
@@ -105,6 +139,27 @@ export default function ViewPatientFiles() {
             <option value="Scans">Scans</option>
             <option value="Notes">Notes</option>
             <option value="Other">Other</option>
+          </select>
+        </div>
+      )}
+
+      {appointments.length > 0 && (
+        <div style={{ marginBottom: "1rem" }}>
+          <label style={labelStyle}>Filter by Appointment:</label>
+          <select
+            style={inputStyle}
+            value={appointmentFilter}
+            onChange={(e) => setAppointmentFilter(e.target.value)}
+          >
+            <option value="">All Appointments</option>
+
+            {appointments.map((a) => (
+              <option key={a.id} value={a.id}>
+                {a.appointmentDate?.toDate
+                  ? a.appointmentDate.toDate().toLocaleString()
+                  : "Unknown date"}
+              </option>
+            ))}
           </select>
         </div>
       )}
